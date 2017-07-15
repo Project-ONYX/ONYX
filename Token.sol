@@ -5,7 +5,7 @@ contract OnyxToken {
 	string public constant symbol = "ONYX";
 	uint8 public constant decimals = 18;
 	
-    uint256 totalTokens = 0;
+    	uint256 totalSupply = 0;
 	mapping (address => uint256) balances;
 	mapping(address => mapping (address => uint256)) allowed;
 	
@@ -17,7 +17,7 @@ contract OnyxToken {
 	}
 	
 	function tokenSupply() constant returns (uint totalSupply) {
-		return totalTokens;
+		return totalSupply;
 	}
 	
 	function balanceOf(address _owner) constant returns (uint balance) {
