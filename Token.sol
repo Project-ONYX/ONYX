@@ -45,17 +45,18 @@ contract OnyxToken {
 	event CallVote(address indexed _owner, string indexed _voteType);
 	event Vote(address indexed _owner, string indexed _voteType, uint _numVotes, uint256 _vote);
 
-	function OnyxToken(uint _callToVotePercent, uint _votePassPercent, uint _votingBlockWindowSize, uint _fee) {
+	function OnyxToken(uint _callToVotePercent, uint _votePassPercent, uint _votingBlockWindowSize, uint _fee, uint _stake) {
 		if (_callToVotePercent == 0) throw;
 		if (_votePassPercent == 0) throw;
 		if (_votingBlockWindowSize == 0) throw;
 
-		fee = _fee;
-		callToVotePercent = _callToVotePercent; // Percent of tokens calling a vote required to trigger vote (divide by 100)
-		votePassPercent = _votePassPercent; // Percent of tokens voting required to pass a vote (divide by 100)
-		votingBlockWindowSize = _votingBlockWindowSize; // Window for collecting vote calls
-		currentVoteBlock = block.number; // Current block window start block
-		endVoteBlock = currentVoteBlock + votingBlockWindowSize; // End of current vote window block
+		fee = _fee; 												// part per thousand representation of the fee percentage (3 means .003)
+		stake = _stake 												// number of tokens needed to use onyx network
+		callToVotePercent = _callToVotePercent; 					// Percent of tokens calling a vote required to trigger vote (divide by 100)
+		votePassPercent = _votePassPercent; 						// Percent of tokens voting required to pass a vote (divide by 100)
+		votingBlockWindowSize = _votingBlockWindowSize; 			// Window for collecting vote calls
+		currentVoteBlock = block.number; 							// Current block window start block
+		endVoteBlock = currentVoteBlock + votingBlockWindowSize; 	// End of current vote window block
 	}
 	
 	function tokenSupply() constant returns (uint totalSupply) {
@@ -169,38 +170,38 @@ contract OnyxToken {
 			endVoteBlock = currentVoteBlock + votingBlockWindowSize;
 
 			if(votingActive["Fee"]) {
-				if(votes["Fee"]/totalSupply >= votePassPercent/100) {
-					// Apply vote
+				if(votes["Fee"].num/totalSupply >= votePassPercent/100) {
+					fee = votes["Fee"].totalValue/votes["Fee"].num * 1000;
 				}
 				votingActive["Fee"] = false;
 			} else {
 				if(voteCalls["Fee"]/totalSupply >= callToVotePercent/100) {
-					votingActive["Fee"] = true;
 					votes["Fee"] = VoteCounter(0, 0);
+					votingActive["Fee"] = true;
 				}
 			}
 
 			if(votingActive["Stake"]) {
-				if(votes["Stake"]/totalSupply >= votePassPercent/100) {
-					// Apply vote
+				if(votes.num["Stake"]/totalSupply >= votePassPercent/100) {
+					stake = votes["Stake"].totalValue/votes["Stake"].num;
 				}
 				votingActive["Stake"] = false;
 			} else {
 				if(voteCalls["Stake"]/totalSupply >= callToVotePercent/100) {
-					votingActive["Stake"] = true;
 					votes["Stake"] = VoteCounter(0, 0);
+					votingActive["Stake"] = true;
 				}
 			}
 
 			if(votingActive["Milestone"]) {
-				if(votes["Milestone"]/totalSupply >= votePassPercent/100) {
+				if(votes.num["Milestone"]/totalSupply >= votePassPercent/100) {
 					// Apply vote
 				}
 				votingActive["Milestone"] = false;
 			} else {
 				if(voteCalls["Milestone"]/totalSupply >= callToVotePercent/100) {
-					votingActive["Milestone"] = true;
 					votes["Milestone"] = VoteCounter(0, 0);
+					votingActive["Milestone"] = true;
 				}
 			}
 
