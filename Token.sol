@@ -5,7 +5,7 @@ contract OnyxToken {
 	string public constant symbol = "ONYX";
 	uint8 public constant decimals = 18;
 	
-    uint256 totalSupply = 0;
+	uint256 totalSupply = 0;
 	mapping (address => uint256) balances;
 	mapping (address => mapping (address => uint256)) allowances;
 
