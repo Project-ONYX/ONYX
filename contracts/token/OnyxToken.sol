@@ -1,14 +1,14 @@
-pragma solidity ^0.4.8;
+pragma solidity ^0.4.11;
 
-contract OnyxToken {
+import './ERC20.sol';
+import './BasicToken.sol';
+import '../lib/math/SafeMath.sol';
+
+contract OnyxToken is ERC20, BasicToken {
     string public constant name = "ONYX Token";
     string public constant symbol = "ONYX";
     uint8 public constant decimals = 18;
     
-    uint256 totalSupply = 0;
-    mapping (address => uint256) balances;
-    mapping (address => mapping (address => uint256)) allowances;
-
     struct Vote {
         uint256 blockNum;
         uint256 value;
@@ -40,31 +40,21 @@ contract OnyxToken {
     votingActive["Stake"] = false;
     votingActive["Milestone"] = false;
 
-    event Transfer(address indexed _from, address indexed _to, uint _value);
-    event Approval(address indexed _owner, address indexed _spender, uint _value);
     event CallVote(address indexed _owner, string indexed _voteType);
     event Vote(address indexed _owner, string indexed _voteType, uint _numVotes, uint256 _vote);
 
-    function OnyxToken(uint _callToVotePercent, uint _votePassPercent, uint _votingBlockWindowSize, uint _fee, uint _stake) {
-        if (_callToVotePercent == 0) throw;
-        if (_votePassPercent == 0) throw;
+    function OnyxToken(uint _callToVoteThreshold, uint _voteEffectiveThreshold, uint _votingBlockWindowSize, uint _fee, uint _stake) {
+        if (_callToVoteThreshold == 0) throw;
+        if (_voteEffectiveThreshold == 0) throw;
         if (_votingBlockWindowSize == 0) throw;
 
         fee = _fee;                                                 // part per thousand representation of the fee percentage (3 means .003)
         stake = _stake                                              // number of tokens needed to use onyx network
-        callToVotePercent = _callToVotePercent;                     // Percent of tokens calling a vote required to trigger vote (divide by 100)
-        votePassPercent = _votePassPercent;                         // Percent of tokens voting required to pass a vote (divide by 100)
+        callToVoteThreshold = _callToVoteThreshold;                     // Percent of tokens calling a vote required to trigger vote (divide by 100)
+        voteEffectiveThreshold = _voteEffectiveThreshold;                         // Percent of tokens voting required to pass a vote (divide by 100)
         votingBlockWindowSize = _votingBlockWindowSize;             // Window for collecting vote calls
         currentVoteBlock = block.number;                            // Current block window start block
         endVoteBlock = currentVoteBlock + votingBlockWindowSize;    // End of current vote window block
-    }
-    
-    function tokenSupply() constant returns (uint totalSupply) {
-        return totalSupply;
-    }
-    
-    function balanceOf(address _owner) constant returns (uint balance) {
-        returns balances[_owner];
     }
     
     function transfer(address _to, uint _value) returns (bool success) {
@@ -110,15 +100,6 @@ contract OnyxToken {
         } else {
             return false;
         }
-    }
-    
-    function approve(address _spender, uint _value) returns (bool success) {
-        allowances[msg.sender][_spender] = _value;
-        return true;
-    }
-    
-    function allowance(address _owner, address _spender) constant returns (uint remainining) {
-        return allowances[_owner][_spender];
     }
 
     function transferVoteCall(address _owner, address _transfer, string _type, uint _value) returns (bool success) {
@@ -169,37 +150,42 @@ contract OnyxToken {
             currentVoteBlock = endVoteBlock;
             endVoteBlock = currentVoteBlock + votingBlockWindowSize;
 
+            // FEE VOTING 
             if(votingActive["Fee"]) {
-                if(votes["Fee"].num/totalSupply >= votePassPercent/100) {
-                    fee = votes["Fee"].totalValue/votes["Fee"].num * 1000;
+                if(votes["Fee"].num/totalSupply >= voteEffectiveThreshold/100) {
+                    effectiveTotalValue = fee*(totalSupply - votes["Fee"].num) + votes["Fee"].totalValue 
+                    fee = effectiveTotalValue/totalSupply * 1000;
                 }
                 votingActive["Fee"] = false;
             } else {
-                if(voteCalls["Fee"]/totalSupply >= callToVotePercent/100) {
+                if(voteCalls["Fee"]/totalSupply >= callToVoteThreshold/100) {
                     votes["Fee"] = VoteCounter(0, 0);
                     votingActive["Fee"] = true;
                 }
             }
 
+            // STAKE VOTING
             if(votingActive["Stake"]) {
-                if(votes.num["Stake"]/totalSupply >= votePassPercent/100) {
-                    stake = votes["Stake"].totalValue/votes["Stake"].num;
+                if(votes.num["Stake"]/totalSupply >= voteEffectiveThreshold/100) {
+                    effectiveTotalValue = stake*(totalSupply - votes["Stake"].num) + votes["Stake"].totalValue
+                    stake = effectiveTotalValue/totalSupply;
                 }
                 votingActive["Stake"] = false;
             } else {
-                if(voteCalls["Stake"]/totalSupply >= callToVotePercent/100) {
+                if(voteCalls["Stake"]/totalSupply >= callToVoteThreshold/100) {
                     votes["Stake"] = VoteCounter(0, 0);
                     votingActive["Stake"] = true;
                 }
             }
 
+            // MILESTONE VOTING
             if(votingActive["Milestone"]) {
-                if(votes.num["Milestone"]/totalSupply >= votePassPercent/100) {
+                if(votes.num["Milestone"]/totalSupply >= voteEffectiveThreshold/100) {
                     // Apply vote
                 }
                 votingActive["Milestone"] = false;
             } else {
-                if(voteCalls["Milestone"]/totalSupply >= callToVotePercent/100) {
+                if(voteCalls["Milestone"]/totalSupply >= callToVoteThreshold/100) {
                     votes["Milestone"] = VoteCounter(0, 0);
                     votingActive["Milestone"] = true;
                 }
