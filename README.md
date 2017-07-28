@@ -3,12 +3,12 @@ Distributed Test Driven Software Development built on the Ethereum blockchain
 
 # Directory Structure
 
-README.md
-contracts --> All smart contracts are contained in this directory
-	crowdsale --> All code related to the crowdsale (modular)
-	dapp --> All code related to the actual dapp
-	lib --> libraries such as math that are used across project
-	token --> All code related to the ONYX token itself (modular)
+* README.md
+* contracts --> All smart contracts are contained in this directory
+  * crowdsale --> All code related to the crowdsale (modular)
+  * dapp --> All code related to the actual dapp
+  * lib --> libraries such as math that are used across project
+  * token --> All code related to the ONYX token itself (modular)
 
 # What is Project ONYX
 
