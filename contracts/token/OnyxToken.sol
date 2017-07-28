@@ -1,16 +1,33 @@
 pragma solidity ^0.4.11;
 
 import './ERC20.sol';
-import './BasicToken.sol';
+import './MintableToken.sol';
 import '../lib/math/SafeMath.sol';
 
-contract OnyxToken is ERC20, BasicToken {
+/**
+ * @title OnyxToken
+ * @dev Full Token contract for the ONYX token. Includes voting as its
+ * largest change from the Mintable Token. Voting includes the act of 
+ * vote calling (calling an item to vote) and the actual voting process.
+ * Also requires the editing of the transfer and transferFrom methods in
+ * order to keep track of the votes as tokens change hands and to prevent
+ * double voting.
+ */
+contract OnyxToken is ERC20, MintableToken {
     using SafeMath for uint256;
 
     string public constant name = "ONYX Token";
     string public constant symbol = "ONYX";
     uint8 public constant decimals = 18;
     
+    uint fee;
+    uint stake;
+    uint callToVoteThreshold;
+    uint voteEffectiveThreshold;
+    uint256 votingBlockWindowSize;
+    uint256 currentVoteBlock;
+    uint256 endVoteBlock;
+
     struct Vote {
         uint256 blockNum;
         uint256 value;
@@ -47,11 +64,11 @@ contract OnyxToken is ERC20, BasicToken {
 
     /**
     * @dev Constructor
-    * @param _callToVoteThreshold is the threshold of voter participation required to call vote (1-100)
-    * @param _voteEffectiveThreshold is the threshold of voter participation required (non status quo votes) to apply vote (1-100)
-    * @param _votingBlockWindowSize is the size of the voting window in blocks
-    * @param _fee is the fee applied for transactions in the ONYX network
-    * @param _stake is the stake required for participation in the ONYX network
+    * @param _callToVoteThreshold uint is the threshold of voter participation required to call vote (1-100)
+    * @param _voteEffectiveThreshold uint is the threshold of voter participation required (non status quo votes) to apply vote (1-100)
+    * @param _votingBlockWindowSize uint256 is the size of the voting window in blocks
+    * @param _fee uint is the fee applied for transactions in the ONYX network
+    * @param _stake uint is the stake required for participation in the ONYX network
     */
     function OnyxToken(uint _callToVoteThreshold, uint _voteEffectiveThreshold, uint256 _votingBlockWindowSize, uint _fee, uint _stake) {
         require (_callToVoteThreshold > 0 && _callToVoteThreshold <= 100);
@@ -65,7 +82,7 @@ contract OnyxToken is ERC20, BasicToken {
         voteEffectiveThreshold = _voteEffectiveThreshold;           // Percent of tokens voting required to pass a vote (divide by 100)
         votingBlockWindowSize = _votingBlockWindowSize;             // Window for collecting vote calls
         currentVoteBlock = block.number;                            // Current block window start block
-        endVoteBlock = currentVoteBlock + votingBlockWindowSize;    // End of current vote window block
+        endVoteBlock = currentVoteBlock.add(votingBlockWindowSize); // End of current vote window block
     }
 
     /**
@@ -73,7 +90,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @param _to address The address which you want to transfer to
     * @param _value uint256 the amout of tokens to be transferred
     */
-    function transfer(address _to, uint256 _value) returns (bool success) {
+    function transfer(address _to, uint256 _value) returns (bool) {
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
 
@@ -93,7 +110,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @param _to address The address which you want to transfer to
     * @param _value uint256 the amout of tokens to be transferred
     */
-    function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
+    function transferFrom(address _from, address _to, uint256 _value) returns (bool) {
         balances[_to] += balances[_to].add(_value);
         balances[_from] = balances[_from].sub(_value);
         allowances[_from][msg.sender] -= allowances[_from][msg.sender].sub(_value);
@@ -116,7 +133,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @param _type string The vote call type being transferred
     * @param _value uint256 the amout of tokens to be transferred
     */
-    function transferVoteCall(address _owner, address _transfer, string _type, uint256 _value) returns (bool success) {
+    function transferVoteCall(address _owner, address _transfer, string _type, uint256 _value) returns (bool) {
         if(hasCalledVote(_owner, _type)) {
             voteCalls[_type] = voteCalls[_type].sub(_value);
         }
@@ -134,7 +151,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @param _type string The vote type being transferred
     * @param _value uint256 the amout of tokens to be transferred
     */
-    function transferVote(address _owner, address _transfer, string _type, uint256 _value) returns (bool success) {
+    function transferVote(address _owner, address _transfer, string _type, uint256 _value) returns (bool) {
         if(hasVoted(_owner, _type)) {
             votes[_type].num = votes[_type].num.sub(_value);
             uint256 ownerValue = _value.mul(voted[_owner][_type].vote);
@@ -153,7 +170,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @param _owner address The address of which the vote call status is being checked
     * @param _type string The vote call type being addressed
     */
-    function hasCalledVote(address _owner, string _type) constant returns (bool truth) {
+    function hasCalledVote(address _owner, string _type) constant returns (bool) {
         if(voteCalled[_owner][_type] >= currentVoteBlock && voteCalled[_owner][_type] < endVoteBlock) {
             return true;
         } else {
@@ -166,7 +183,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @param _owner address The address of which the vote status is being checked
     * @param _type string The vote call type being addressed
     */
-    function hasVoted(address _owner, string _type) constant returns (bool truth) {
+    function hasVoted(address _owner, string _type) constant returns (bool) {
         if(voted[_owner][_type].blockNum >= currentVoteBlock && voted[_owner][_type].blockNum < endVoteBlock) {
             return true;
         } else {
@@ -178,7 +195,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @dev Returns whether voting is active for a type of vote
     * @param _type string The vote call type being addressed
     */
-    function isVotingActive(string _type) constant returns (bool active) {
+    function isVotingActive(string _type) constant returns (bool) {
         return votingActive[_type];
     }
 
@@ -186,7 +203,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @dev Returns checks and advances the voting block.
     *      Also responsible for applying the results of votes.
     */
-    function checkVoteBlock() returns (bool success) {
+    function checkVoteBlock() returns (bool) {
         if(block.number >= endVoteBlock) {
             currentVoteBlock = endVoteBlock;
             endVoteBlock = currentVoteBlock.add(votingBlockWindowSize);
@@ -245,7 +262,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @dev Call for a vote of a certain type
     * @param _type string The vote call type being addressed
     */
-    function callVote(string _type) returns (bool success) {
+    function callVote(string _type) returns (bool) {
         checkVoteBlock();
         if(!votingActive[_type] && voteTypes[_type] > 0 && !hasCalledVote(msg.sender, _type)) {
             voteCalled[msg.sender][_type] = block.number;
@@ -261,7 +278,7 @@ contract OnyxToken is ERC20, BasicToken {
     * @dev Cast a vote for a certain type
     * @param _type string The vote call type being addressed
     */
-    function castVote(string _type, uint256 _vote) returns (bool success) {
+    function castVote(string _type, uint256 _vote) returns (bool) {
         checkVoteBlock();
         if(votingActive[_type] && _vote >= 0 && _vote <= 100) {
             if(!hasVoted(msg.sender, _type)) {

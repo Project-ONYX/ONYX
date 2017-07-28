@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import '../token/MintableToken.sol';
+import '../token/OnyxToken.sol';
 import '../math/SafeMath.sol';
 
 /**
@@ -15,7 +15,7 @@ contract Crowdsale {
     using SafeMath for uint256;
 
     // The token being sold
-    MintableToken public token;
+    OnyxToken public token;
 
     // start and end block where investments are allowed (both inclusive)
     uint256 public startBlock;
@@ -54,8 +54,9 @@ contract Crowdsale {
 
     // creates the token to be sold. 
     // override this method to have crowdsale of a specific mintable token.
-    function createTokenContract() internal returns (MintableToken) {
-        return new MintableToken();
+    function createTokenContract() internal returns (OnyxToken) {
+        // Make Onyx tokens with initial conditions
+        return new OnyxToken(20, 10, 100, 10, 10);
     }
 
 

@@ -1,15 +1,14 @@
 pragma solidity ^0.4.11;
 
-
-import './ERC20Basic.sol';
+import './ERC20.sol';
 import '../lib/math/SafeMath.sol';
-
+import '../lib/Ownable.sol'
 
 /**
  * @title Basic token
  * @dev Basic version of StandardToken, with no allowances. 
  */
-contract BasicToken is ERC20 {
+contract StandardToken is ERC20, Ownable {
     using SafeMath for uint256;
 
     mapping(address => uint256) balances;
@@ -20,7 +19,7 @@ contract BasicToken is ERC20 {
     * @param _to The address to transfer to.
     * @param _value The amount to be transferred.
     */
-    function transfer(address _to, uint256 _value) returns (bool success) {
+    function transfer(address _to, uint256 _value) returns (bool) {
       balances[msg.sender] = balances[msg.sender].sub(_value);
       balances[_to] = balances[_to].add(_value);
       Transfer(msg.sender, _to, _value);
@@ -33,7 +32,7 @@ contract BasicToken is ERC20 {
     * @param _to address The address which you want to transfer to
     * @param _value uint256 the amout of tokens to be transfered
     */
-    function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
+    function transferFrom(address _from, address _to, uint256 _value) returns (bool) {
         var _allowance = allowances[_from][msg.sender];
 
         // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
@@ -51,7 +50,7 @@ contract BasicToken is ERC20 {
     * @param _owner The address to query the the balance of. 
     * @return An uint256 representing the amount owned by the passed address.
     */
-    function balanceOf(address _owner) constant returns (uint256 balance) {
+    function balanceOf(address _owner) constant returns (uint256) {
       return balances[_owner];
     }
 
@@ -61,7 +60,7 @@ contract BasicToken is ERC20 {
     * @param _spender address The address which will spend the funds.
     * @return A uint256 specifing the amount of tokens still available for the spender.
     */
-    function allowance(address _owner, address _spender) constant returns (uint256 remainining) {
+    function allowance(address _owner, address _spender) constant returns (uint256) {
         return allowances[_owner][_spender];
     }
 

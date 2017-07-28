@@ -1,10 +1,8 @@
 pragma solidity ^0.4.11;
 
-
 import '../lib/math/SafeMath.sol';
 import './FinalizableCrowdsale.sol';
-import './RefundVault.sol';
-
+import './MilestoneVault.sol';
 
 /**
 * @title RefundableCrowdsale
@@ -21,9 +19,9 @@ contract RefundableCrowdsale is FinalizableCrowdsale {
     // refund vault used to hold funds while crowdsale is running
     RefundVault public vault;
 
-    function RefundableCrowdsale(uint256 _goal) {
+    function RefundableCrowdsale(uint256 _goal, uint256 _startBlock, uint256 _endBlock, uint256 _rate, address _wallet) FinalizableCrowdsale(_startBlock, _endBlock, _rate, _wallet) {
         require(_goal > 0);
-        vault = new RefundVault(wallet);
+        vault = new MilestoneVault(wallet, address(token));
         goal = _goal;
     }
 
