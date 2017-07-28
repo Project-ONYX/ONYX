@@ -20,7 +20,7 @@ contract BasicToken is ERC20 {
     * @param _to The address to transfer to.
     * @param _value The amount to be transferred.
     */
-    function transfer(address _to, uint256 _value) returns (bool) {
+    function transfer(address _to, uint256 _value) returns (bool success) {
       balances[msg.sender] = balances[msg.sender].sub(_value);
       balances[_to] = balances[_to].add(_value);
       Transfer(msg.sender, _to, _value);
@@ -33,7 +33,7 @@ contract BasicToken is ERC20 {
     * @param _to address The address which you want to transfer to
     * @param _value uint256 the amout of tokens to be transfered
     */
-    function transferFrom(address _from, address _to, uint256 _value) returns (bool) {
+    function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
         var _allowance = allowances[_from][msg.sender];
 
         // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
