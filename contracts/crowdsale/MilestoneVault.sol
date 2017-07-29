@@ -10,13 +10,12 @@ import '../token/OnyxToken.sol';
 * @dev This contract is used for storing funds while a crowdsale
 * is in progress. Supports refunding the money if crowdsale fails,
 * and forwarding it if crowdsale is successful. Also supports the
-* releasing of funds according to milestone voting from a token.
+* releasing of funds in chunks according to a timer.
 */
 contract MilestoneVault is RefundVault, Ownable {
     using SafeMath for uint256;
 
     enum State { Active, Refunding, Closed }
-    // Finish funding levels Implementation in array not enum 
 
     mapping (address => uint256) public deposited;
     address public wallet;
@@ -24,16 +23,20 @@ contract MilestoneVault is RefundVault, Ownable {
     State public state;
     FundingLevels public completedFundingState;
     uint256 public totalBalance;
+    uint256 public extractedBalance;
 
-    mapping (FundingLevels => uint) public levels;
-    levels[FundingLevels.L0] = 0;
-    levels[FundingLevels.L1] = 50;
-    levels[FundingLevels.L2] = 50;
-    levels[FundingLevels.L3] = 100;
+    struct Level {
+        uint percentRelease;
+        uint256 blockNum; // Block at which to release level
+    }
 
-    event L1();
-    event L2();
-    event L3();
+    Level[4] levels;
+    levels[0] = Level(0, 0);
+    levels[1] = Level(50, 0);
+    levels[2] = Level(75, 1000000); // Init with block offsets
+    levels[3] = Level(100, 2000000);
+
+    event Milestone(uint level);
     event Closed();
     event RefundsEnabled();
     event Refunded(address indexed beneficiary, uint256 weiAmount);
@@ -43,29 +46,51 @@ contract MilestoneVault is RefundVault, Ownable {
         wallet = _wallet;
         token = OnyxToken(_token);
         state = State.Active;
-        completedFundingState = FundingLevels.L0;
+        completedFundingState = 0;
     }
 
     function deposit(address investor) onlyOwner payable {
         require(state == State.Active);
         deposited[investor] = deposited[investor].add(msg.value);
-        totalBalance = totalBalance.add(msg.value);
     }
 
     function close() onlyOwner {
         require(state == State.Active);
         state = State.Closed;
+        totalBalance = this.balance;
+        extractedBalance = totalBalance;
+        for(uint x = 0; x < levels.length; x++) {
+            levels[x].blockNum = levels[x].blockNum.add(block.number);
+        }
         Closed();
-        wallet.transfer(this.balance);
     }
 
-    function getCurrentMilestone() onlyOwner returns (FundingLevels) {
+    function getCurrentMilestone() onlyOwner returns (uint) {
         // Finish Implementation when Milestones is implemented for ONYX token
+        uint level = 0;
+        for(uint x = 0; x < levels.length; x++) {
+            if(block.number >= levels[x].blockNum) {
+                level = x;
+            } else {
+                return level;
+            }
+        }
+        return level;
     }
 
-    function extractFunds() onlyOwner {
-        require(state != State.Active && state != State.Refunding);
-        FundingLevels currentLevel = getCurrentMilestone();
+    function extractFunds() onlyOwner returns (bool) {
+        require(state == State.Closed);
+        uint currentLevel = getCurrentMilestone();
+        if(currentLevel > completedFundingState) {
+            uint256 removableFunds = totalBalance.mul(levels[currentLevel].div(100)).sub(extractedBalance);
+            require(removableFunds <= this.balance);
+            wallet.transfer(removableFunds);
+            extractedBalance = extractedBalance.add(removableFunds);
+            completedFundingState = currentLevel;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function enableRefunds() onlyOwner {

@@ -44,12 +44,10 @@ contract OnyxToken is ERC20, MintableToken {
     mapping (string => uint) voteTypes;
     voteTypes["Fee"] = 1;
     voteTypes["Stake"] = 2;
-    voteTypes["Milestone"] = 3;
 
-    string[3] voteTypesArr;
+    string[2] voteTypesArr;
     voteTypesArr[0] = "Fee";
     voteTypesArr[1] = "Stake";
-    voteTypesArr[2] = "Milestone";
 
     mapping (string => uint256) voteCalls;
     mapping (string => VoteCounter) votes;
@@ -57,7 +55,6 @@ contract OnyxToken is ERC20, MintableToken {
     mapping (string => bool) votingActive;
     votingActive["Fee"] = false;
     votingActive["Stake"] = false;
-    votingActive["Milestone"] = false;
 
     event CallVote(address indexed _owner, string indexed _voteType);
     event Vote(address indexed _owner, string indexed _voteType, uint _numVotes, uint256 _vote);
@@ -236,22 +233,8 @@ contract OnyxToken is ERC20, MintableToken {
                 }
             }
 
-            // MILESTONE VOTING
-            if(votingActive["Milestone"]) {
-                if(votes.num["Milestone"]/totalSupply >= voteEffectiveThreshold/100) {
-                    // Apply vote
-                }
-                votingActive["Milestone"] = false;
-            } else {
-                if(voteCalls["Milestone"]/totalSupply >= callToVoteThreshold/100) {
-                    votes["Milestone"] = VoteCounter(0, 0);
-                    votingActive["Milestone"] = true;
-                }
-            }
-
             voteCalls["Fee"] = 0;
             voteCalls["Stake"] = 0;
-            voteCalls["Milestone"] = 0;
             returns true;
         } else {
             returns false;
