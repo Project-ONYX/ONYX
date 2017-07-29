@@ -33,7 +33,7 @@ contract MilestoneVault is RefundVault, Ownable {
     Level[4] levels;
     levels[0] = Level(0, 0);
     levels[1] = Level(50, 0);
-    levels[2] = Level(75, 1000000); // Init with block offsets
+    levels[2] = Level(75, 1000000); // Init with block offsets, go ing for 6 months
     levels[3] = Level(100, 2000000);
 
     event Milestone(uint level);
