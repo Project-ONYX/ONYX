@@ -123,6 +123,21 @@ contract OnyxToken is ERC20, MintableToken {
         return true;
     }
 
+
+    /**
+    * @dev Getter method for stake variable
+    */
+    function getStake() constant returns (uint) {
+        return stake;
+    }
+
+    /**
+    * @dev Getter method for fee variable
+    */
+    function getFee() constant returns (uint) {
+        return fee;
+    }    
+
     /**
     * @dev Transfer vote calls from one address to another during a token transfer
     * @param _owner address The address which you want to send from
