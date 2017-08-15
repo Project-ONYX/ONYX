@@ -39,25 +39,40 @@ window.App = {
       accounts = accs;
       account = accounts[0];
 
-      self.refreshBalance();
+      self.refresh();
     });
 
-    var meta;
+    var onyx;
     OnyxToken.deployed().then(function(instance) {
-      var exampleEvent = instance.Transfer({from: account});
-      exampleEvent.watch(function(err, result) {
+      var transferEvent = instance.Transfer({from: account});
+      transferEvent.watch(function(err, result) {
         if (err) {
-          console.log("ERROR")
+          console.log("TRANSFER ERROR")
           console.log(err)
           return;
         }
         console.log("TRANSFER")
-        self.refreshBalance();
-        // check that result.args._from is web3.eth.coinbase then
-        // display result.args._value in the UI and call    
-        // exampleEvent.stopWatching()
+        self.refresh();
+        // transferEvent.stopWatching()
+      })
+
+      var callVoteEvent = instance.CallVote({_owner: account});
+      callVoteEvent.watch(function(err, result) {
+        if (err) {
+          console.log("VOTE CALL ERROR")
+          console.log(err)
+          return;
+        }
+        console.log("VOTE CALLED")
+        self.refresh();
       })
     })
+  },
+
+  refresh: function() {
+    var self = this;
+    self.refreshBalance();
+    self.refreshVotesCalled();
   },
 
   setStatus: function(message) {
@@ -65,13 +80,45 @@ window.App = {
     status.innerHTML = message;
   },
 
+  callVote: function(message) {
+    var self = this;
+
+    var onyx;
+    OnyxToken.deployed().then(function(instance) {
+      onyx = instance;
+      return onyx.callVote("Stake", {from: account});
+    }).then(function(value) {
+      self.setStatus("Vote Called!");
+      self.refresh();
+    }).catch(function(e) {
+      console.log(e);
+      self.setStatus("Error calling vote; see log.");
+    });
+  },
+
+  refreshVotesCalled: function() {
+    var self = this;
+
+    var onyx;
+    OnyxToken.deployed().then(function(instance) {
+      onyx = instance;
+      return onyx.getVotesCalled.call("Stake", {from: account});
+    }).then(function(value) {
+      var votes = document.getElementById("VotesCalled");
+      votes.innerHTML = "Votes Called: " + value;
+    }).catch(function(e) {
+      console.log(e);
+      self.setStatus("Error getting votes called; see log.");
+    })
+  },
+
   refreshBalance: function() {
     var self = this;
 
-    var meta;
+    var onyx;
     OnyxToken.deployed().then(function(instance) {
-      meta = instance;
-      return meta.balanceOf.call(account, {from: account});
+      onyx = instance;
+      return onyx.balanceOf.call(account, {from: account});
     }).then(function(value) {
       console.log("VALUE: " + value);
       var balance_element = document.getElementById("balance");
@@ -90,10 +137,10 @@ window.App = {
 
     this.setStatus("Initiating transaction... (please wait)");
 
-    var meta;
+    var onyx;
     OnyxToken.deployed().then(function(instance) {
-      meta = instance;
-      var ret = meta.transfer(receiver, amount, {from: account});
+      onyx = instance;
+      var ret = onyx.transfer(receiver, amount, {from: account});
       return ret;
     }).then(function(value) {
       self.setStatus("Transaction complete!");
@@ -105,13 +152,13 @@ window.App = {
 };
 
 window.addEventListener('load', function() {
-  // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+  // Checking if Web3 has been injected by the browser (Mist/onyxMask)
   if (typeof web3 !== 'undefined') {
-    console.warn("Using web3 detected from external source. If you find that your accounts don't appear or you have 0 OnyxToken, ensure you've configured that source properly. If using MetaMask, see the following link. Feel free to delete this warning. :) http://truffleframework.com/tutorials/truffle-and-metamask")
-    // Use Mist/MetaMask's provider
+    console.warn("Using web3 detected from external source. If you find that your accounts don't appear or you have 0 OnyxToken, ensure you've configured that source properly. If using onyxMask, see the following link. Feel free to delete this warning. :) http://truffleframework.com/tutorials/truffle-and-onyxmask")
+    // Use Mist/onyxMask's provider
     window.web3 = new Web3(web3.currentProvider);
   } else {
-    console.warn("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
+    console.warn("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to onyxmask for development. More info here: http://truffleframework.com/tutorials/truffle-and-onyxmask");
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
     window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
   }

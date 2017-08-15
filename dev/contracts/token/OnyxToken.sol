@@ -50,9 +50,8 @@ contract OnyxToken is ERC20, MintableToken {
 
     mapping (string => bool) votingActive;
 
-
-    event CallVote(address indexed _owner, string indexed _voteType);
-    event Vote(address indexed _owner, string indexed _voteType, uint _numVotes, uint256 _vote);
+    event CallVote(address indexed _owner, string _voteType);
+    event Vote(address indexed _owner, string _voteType, uint _numVotes, uint256 _vote);
 
     /**
     * @dev Constructor
@@ -122,7 +121,6 @@ contract OnyxToken is ERC20, MintableToken {
         Transfer(_from, _to, _value);
         return true;
     }
-
 
     /**
     * @dev Getter method for stake variable
@@ -209,6 +207,10 @@ contract OnyxToken is ERC20, MintableToken {
     */
     function isVotingActive(string _type) constant returns (bool) {
         return votingActive[_type];
+    }
+
+    function getVotesCalled(string _type) constant returns (uint256) {
+        return voteCalls[_type];
     }
 
     /**
