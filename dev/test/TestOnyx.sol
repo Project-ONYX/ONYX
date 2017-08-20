@@ -10,8 +10,8 @@ contract TestOnyx {
   address addr_1 = 0x42a37c0cEd93a8266e6F1762A9A834e96800Ccf3;
 
   function testInitialBalance() {
-    uint expected = 10000;
+    uint expected = 0;
 
-    Assert.equal(onyx.balanceOf(addr_0), expected, "Owner should have 10000 OnyxToken initially");
+    Assert.equal(onyx.balanceOf(addr_0), expected, "Owner should have 0 OnyxToken initially");
   }
 }

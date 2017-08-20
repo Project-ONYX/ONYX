@@ -67,7 +67,6 @@ contract OnyxToken is ERC20, MintableToken {
         require (_votingBlockWindowSize > 0);
         require (_fee >= 0 && _stake >= 0);
 
-        balances[tx.origin] = 10000;
         fee = _fee;                                                 // part per thousand representation of the fee percentage (3 means .003)
         stake = _stake;                                             // number of tokens needed to use onyx network
         callToVoteThreshold = _callToVoteThreshold;                 // Percent of tokens calling a vote required to trigger vote (divide by 100)
@@ -135,6 +134,10 @@ contract OnyxToken is ERC20, MintableToken {
     function getFee() constant returns (uint) {
         return fee;
     }    
+
+    function getEndVoteBlock() constant returns (uint256) {
+        return endVoteBlock;
+    }
 
     /**
     * @dev Transfer vote calls from one address to another during a token transfer

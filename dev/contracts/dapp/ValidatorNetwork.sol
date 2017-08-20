@@ -8,13 +8,14 @@ import './ReqEngContract.sol';
  * @title ValidatorNetwork
  * @dev Creates and manages the validator network
  */
-contract ValidatorNetwork Ownable {
+contract ValidatorNetwork is Ownable {
     using SafeMath for uint256;
 
     OnyxToken Onyx;
     uint256 stake;
 
     struct Validator {
+        bool init;
         uint256 stake;
         address currentAssignment;
     }
@@ -33,7 +34,7 @@ contract ValidatorNetwork Ownable {
     }
 
     modifier isValidator() {
-        if(validators[msg.sender] != 0) {
+        if(validators[msg.sender].init == true) {
             _;
         }
     }
@@ -43,9 +44,9 @@ contract ValidatorNetwork Ownable {
     }
 
     function newValidator() isApproved returns (bool) {
-        if(validators[msg.sender] == 0) {
+        if(validators[msg.sender].init == false) {
             Onyx.transferFrom(msg.sender, this, stake);
-            validators[msg.sender] = Validator(msg.sender, stake, false, false);
+            validators[msg.sender] = Validator(true, stake, 0);
             return true;
         } else {
             return false;
@@ -57,16 +58,16 @@ contract ValidatorNetwork Ownable {
     }
 
     function validate() returns (address) {
-        randomValidatorAddress = getRandomValidator();
-        randomValidator = validators[randomValidatorAddress];
+        address randomValidatorAddress = getRandomValidator();
+        Validator randomValidator = validators[randomValidatorAddress];
         randomValidator.currentAssignment = msg.sender;
         return randomValidatorAddress;
     }
 
     function endValidation(bool _passed) returns (bool) {
-        contract = ReqEngContract(validators[msg.sender].currentAssignment);
+        ReqEngContract regContract = ReqEngContract(validators[msg.sender].currentAssignment);
         validators[msg.sender].currentAssignment = 0;
-        contract.feedback(_passed);
+        regContract.feedback(_passed);
         return true;
     }
 }
