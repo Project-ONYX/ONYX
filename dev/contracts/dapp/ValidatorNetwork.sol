@@ -28,15 +28,17 @@ contract ValidatorNetwork is Ownable {
     }
 
     modifier isApproved() {
-        if(Onyx.allowance(msg.sender, this) >= stake) {
-            _;
-        }
+        require(Onyx.allowance(msg.sender, this) >= stake);
+        _;
     }
 
     modifier isValidator() {
-        if(validators[msg.sender].init == true) {
-            _;
-        }
+        require(validators[msg.sender].init == true);
+        _;
+    }
+
+    function getStake() constant returns (uint256) {
+        return stake;
     }
 
     function updateStake() returns (bool) {
@@ -47,6 +49,20 @@ contract ValidatorNetwork is Ownable {
         if(validators[msg.sender].init == false) {
             Onyx.transferFrom(msg.sender, this, stake);
             validators[msg.sender] = Validator(true, stake, 0);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function deleteValidator() returns (bool) {
+        Onyx.transfer(msg.sender, stake);
+        validators[msg.sender].init = false;
+        return true;
+    }
+
+    function amValidator(address _addr) constant returns (bool) {
+        if(validators[_addr].init == true) {
             return true;
         } else {
             return false;
