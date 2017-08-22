@@ -20,7 +20,8 @@ contract('ReqEngContract', function(accounts) {
 
 	it("should fail at transferring stake", async function() {
 		try {
-			await reContract.transferStake({value: 100});
+			let stake = await onyx.getStake();
+			await reContract.transferStake({value: stake.toNumber()});
 			assert.fail("Should have failed");
 		} catch(error) {
 			assertJump(error);
@@ -28,11 +29,9 @@ contract('ReqEngContract', function(accounts) {
 	});
 
 	it("should succeed at transferring stake", async function() {
-		try {
-			await reContract.transferStake({value: 100});
-			assert.fail("Should have failed");
-		} catch(error) {
-			assertJump(error);
-		}
+		let stake = await onyx.getStake();
+		await onyx.approve(reContract.address, stake.toNumber(), {from: accounts[0]});		await reContract.transferStake({value: 100});
+		await reContract.transferStake({value: 100});
+		assert(reContract.isActive());
 	});
 })

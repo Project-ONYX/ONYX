@@ -55,6 +55,10 @@ contract ReqEngContract is Ownable {
     	return active;
     }
 
+    function isActive() constant returns (bool) {
+        return active;
+    }
+
     modifier isApproved() {
     	require(Onyx.allowance(msg.sender, this) >= stake);
     	_;
