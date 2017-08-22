@@ -1,8 +1,9 @@
+'use strict';
+
 const assertJump = require('./helpers/assertJump');
 var SafeMathMock = artifacts.require("./helpers/SafeMathMock.sol");
 
 contract('SafeMath', function(accounts) {
-
   let safeMath;
 
   before(async function() {
