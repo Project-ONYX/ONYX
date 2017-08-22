@@ -27,9 +27,11 @@ contract ReqEngContract is Ownable {
 
     bool active;
     bool claimed;
+    bool validating;
 
     event Deployed(address indexed _req, uint256 value);
     event Claimed(address indexed _req, address indexed _eng, uint256 value);
+    event Validated(address indexed _req, address indexed _eng, address indexed _val, uint256 value);
 
     function ReqEngContract(address _req, address _onyx, address _validators, uint256 _deadline) {
     	Requester = _req;
@@ -40,6 +42,7 @@ contract ReqEngContract is Ownable {
     	active = false;
     	claimed = false;
     	deadline = _deadline;
+        validating = false;
     }
 
     /**
@@ -53,16 +56,16 @@ contract ReqEngContract is Ownable {
     }
 
     modifier isApproved() {
-    	if(Onyx.allowance(msg.sender, this) >= stake) {
-    		_;
-    	}
+    	require(Onyx.allowance(msg.sender, this) >= stake);
+    	_;
     }
 
     /**
     * @dev Claims the contract for an Engineer to work on
     */
-    function claim() returns (bool) {
+    function claim() isApproved returns (bool) {
     	if(!claimed) {
+            Onyx.transferFrom(msg.sender, this, stake);
     		Engineer = msg.sender;
     		claimed = true;
     		Claimed(Requester, Engineer, this.balance);
@@ -73,13 +76,26 @@ contract ReqEngContract is Ownable {
 
     function submit() returns (bool) {
     	// TODO: Send the code to the validate function
-    	Validator = Validators.validate();
+        if(validating == false) {
+            validating = true;
+            Validators.validate();
+        }
     }
 
-    function feedback(bool _passed) returns (bool) {
+    function callDeadline() onlyOwner returns (bool) {
+        if(block.number >= deadline && validating == false) {
+            selfdestruct(Requester);
+        }
+    }
+
+    function feedback(bool _passed, address _validator) returns (bool) {
     	if(_passed) {
-    		Engineer.transfer(this.balance);
+            Validator = _validator;
     		Onyx.transfer(Requester, stake);
-   		}
+            Onyx.transfer(Engineer, stake);
+            selfdestruct(Engineer);
+   		} else {
+            validating = false;
+        }
     }
 }

@@ -83,7 +83,7 @@ contract ValidatorNetwork is Ownable {
     function endValidation(bool _passed) returns (bool) {
         ReqEngContract regContract = ReqEngContract(validators[msg.sender].currentAssignment);
         validators[msg.sender].currentAssignment = 0;
-        regContract.feedback(_passed);
+        regContract.feedback(_passed, msg.sender);
         return true;
     }
 }
