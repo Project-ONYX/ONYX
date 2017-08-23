@@ -59,6 +59,18 @@ contract ReqEngContract is Ownable {
         return active;
     }
 
+    function isClaimed() constant returns (bool) {
+        return claimed;
+    }
+
+    function getDeadline() constant returns (uint256) {
+        return deadline;
+    }
+
+    function isValidating() constant returns (bool) {
+        return validating;
+    }
+
     modifier isApproved() {
     	require(Onyx.allowance(msg.sender, this) >= stake);
     	_;
@@ -68,14 +80,12 @@ contract ReqEngContract is Ownable {
     * @dev Claims the contract for an Engineer to work on
     */
     function claim() isApproved returns (bool) {
-    	if(!claimed) {
-            Onyx.transferFrom(msg.sender, this, stake);
-    		Engineer = msg.sender;
-    		claimed = true;
-    		Claimed(Requester, Engineer, this.balance);
-    		return true;
-    	}
-    	return false;
+        require(active && !claimed);
+        Onyx.transferFrom(msg.sender, this, stake);
+		Engineer = msg.sender;
+		claimed = true;
+		Claimed(Requester, Engineer, this.balance);
+		return true;
     }
 
     function submit() returns (bool) {
@@ -87,9 +97,14 @@ contract ReqEngContract is Ownable {
     }
 
     function callDeadline() onlyOwner returns (bool) {
-        if(block.number >= deadline && validating == false) {
-            selfdestruct(Requester);
+        require(block.number >= deadline && validating == false);
+        if(active) {
+            Onyx.transfer(Requester, stake);
         }
+        if(claimed) {
+            Onyx.transfer(Engineer, stake);
+        }
+        selfdestruct(Requester);
     }
 
     function feedback(bool _passed, address _validator) returns (bool) {

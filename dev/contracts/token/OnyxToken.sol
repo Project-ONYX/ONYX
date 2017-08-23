@@ -110,12 +110,12 @@ contract OnyxToken is ERC20, MintableToken {
     function transferFrom(address _from, address _to, uint256 _value) returns (bool) {
         balances[_to] = balances[_to].add(_value);
         balances[_from] = balances[_from].sub(_value);
-        allowances[_from][msg.sender] -= allowances[_from][msg.sender].sub(_value);
+        allowances[_from][msg.sender] = allowances[_from][msg.sender].sub(_value);
 
         checkVoteBlock();
         for(uint x = 0; x < voteTypesArr.length; x++) {
-            transferVoteCall(msg.sender, _to, voteTypesArr[x], _value);
-            transferVote(msg.sender, _to, voteTypesArr[x], _value);
+            transferVoteCall(_from, _to, voteTypesArr[x], _value);
+            transferVote(_from, _to, voteTypesArr[x], _value);
         }
         Transfer(_from, _to, _value);
         return true;

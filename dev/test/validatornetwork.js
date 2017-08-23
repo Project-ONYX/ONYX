@@ -48,32 +48,6 @@ contract('ValidatorNetwork', function(accounts) {
 		assert.equal(current_balance.toNumber(), 1000);
 	});
 
-	it("should fail at adding and deleting a Validator twice", async function() {
-		let stake = await onyx.getStake();
-		await onyx.approve(valNet.address, stake.toNumber(), {from: accounts[0]});
-		await valNet.newValidator({from: accounts[0]});
-		let stake_held = await valNet.amValidator(accounts[0]);
-		let current_balance = await onyx.balanceOf(accounts[0]);
-		assert.isTrue(stake_held);
-		assert.equal(current_balance.toNumber(), 990);
-
-		await valNet.deleteValidator({from: accounts[0]});
-		stake_held = await valNet.amValidator(accounts[0]);
-		current_balance = await onyx.balanceOf(accounts[0]);
-		assert.isFalse(stake_held);
-		assert.equal(current_balance.toNumber(), 1000);
-
-		try {
-			await onyx.approve(valNet.address, stake.toNumber(), {from: accounts[0]});
-			await valNet.newValidator({from: accounts[0]});
-			stake_held = await valNet.amValidator(accounts[0]);
-			current_balance = await onyx.balanceOf(accounts[0]);
-			assert.fail("Should have failed by now");
-		} catch(error) {
-			assertJump(error);
-		}
-	});
-
 	it("should add and delete a Validator twice", async function() {
 		let stake = await onyx.getStake();
 		await onyx.approve(valNet.address, stake.toNumber(), {from: accounts[0]});
@@ -89,7 +63,6 @@ contract('ValidatorNetwork', function(accounts) {
 		assert.isFalse(stake_held);
 		assert.equal(current_balance.toNumber(), 1000);
 
-		await onyx.approve(valNet.address, 0, {from: accounts[0]});
 		await onyx.approve(valNet.address, stake.toNumber(), {from: accounts[0]});
 		await valNet.newValidator({from: accounts[0]});
 		stake_held = await valNet.amValidator(accounts[0]);
