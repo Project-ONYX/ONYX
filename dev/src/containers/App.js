@@ -1,18 +1,23 @@
 import React, { Component } from 'react'
-import OnyxTokenContract from '../build/contracts/OnyxToken.json'
-import getWeb3 from './utils/getWeb3'
+import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
+import getWeb3 from '../utils/getWeb3'
 
-import './css/oswald.css'
-import './css/open-sans.css'
-import './css/pure-min.css'
-import './App.css'
+import '../css/oswald.css'
+import '../css/open-sans.css'
+import '../css/pure-min.css'
+import '../lib/font-awesome/css/font-awesome.min.css'
+import '../css/App.css'
+
+import Header from '../components/Header'
+import Main from './Main'
 
 class App extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      storageValue: 0,
+      account: null,
+      balance: 0,
       web3: null
     }
   }
@@ -54,15 +59,12 @@ class App extends Component {
     this.state.web3.eth.getAccounts((error, accounts) => {
       Onyx.deployed().then((instance) => {
         OnyxInstance = instance
-
-        // Stores a given value, 5 by default.
-        return OnyxInstance.mint(accounts[0], 10, {from: accounts[0]})
-      }).then((result) => {
+        this.setState({ account: accounts[0] })
         // Get the value from the contract to prove it worked.
         return OnyxInstance.balanceOf.call(accounts[0])
       }).then((result) => {
         // Update state with the result.
-        return this.setState({ storageValue: result.c[0] })
+        return this.setState({ balance: result.c[0] })
       })
     })
   }
@@ -70,22 +72,11 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <nav className="navbar pure-menu pure-menu-horizontal">
-            <a href="#" className="pure-menu-heading pure-menu-link">Truffle Box</a>
-        </nav>
-
-        <main className="container">
-          <div className="pure-g">
-            <div className="pure-u-1-1">
-              <h1>Good to Go!</h1>
-              <p>Your Truffle Box is installed and ready.</p>
-              <h2>Smart Contract Example</h2>
-              <p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
-              <p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
-              <p>The stored value is: {this.state.storageValue}</p>
-            </div>
-          </div>
-        </main>
+        <Header 
+          account={this.state.account}
+          balance={this.state.balance}
+        />
+        <Main />
       </div>
     );
   }

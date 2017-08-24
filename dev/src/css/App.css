@@ -38,19 +38,25 @@ code {
 
 .navbar {
   position: fixed;
-  padding: 5px;
-  background: #0c1a2b;
+  padding: 1em;
+  background: white;
   font-family: 'Oswald', 'Arial Narrow', sans-serif;
 }
 
+.pure-menu-children {
+  background: white;
+  width: 100% !important;
+}
+
 .navbar a {
-  color: #fff;
+  color: #2D2D2D;
 }
 
 .navbar a:active,
 .navbar a:focus,
 .navbar a:hover {
-  background: #233e5e;
+  background: #2D2D2D;
+  color: white
 }
 
 .navbar .pure-menu-heading {
@@ -65,4 +71,34 @@ code {
 .navbar .uport-logo {
   height: 16px;
   margin-right: 10px;
+}
+
+.pull-right {
+  float: right;
+}
+
+.content {
+  padding-top: 2em;
+}
+
+.home-container {
+  height: 60vh;
+  background-color: #232C42;
+  background-image: url("../../public/diagmonds.png");
+  text-align: center;
+}
+
+.home-container h1 {
+  color: white;
+  font-size: 3em;
+}
+
+.home-container h2 {
+  color: white;
+  font-size: 1.5em;
+}
+
+.logo {
+  padding-top: 5%;
+  height: 25%;
 }
