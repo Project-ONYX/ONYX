@@ -1,6 +1,4 @@
 import React, { Component } from 'react'
-import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
-import getWeb3 from '../utils/getWeb3'
 
 import Logo from "../../public/logo.svg"
 

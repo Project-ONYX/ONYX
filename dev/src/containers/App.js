@@ -21,6 +21,8 @@ class App extends Component {
       Onyx: null,
       web3: null
     }
+
+    this.updateBalance = this.updateBalance.bind(this);
   }
 
   updateBalance() {
@@ -75,18 +77,19 @@ class App extends Component {
     this.setState({ Onyx: Onyx })
 
     var onyx
+    var updateBalance = this.updateBalance
 
     this.state.Onyx.deployed().then(function(instance) {
       onyx = instance
       var transfers = onyx.Transfer({fromBlock: "latest"})
       transfers.watch(function(error, result) {
         if (error == null) {
-          this.updateBalance()
+          updateBalance()
         }
       })
     })
 
-    this.updateBalance()
+    updateBalance()
   }
 
   render() {
@@ -98,6 +101,7 @@ class App extends Component {
         />
         <Main 
           web3={this.state.web3}
+          Onyx={this.state.Onyx}
         />
       </div>
     )
