@@ -44,12 +44,21 @@ code {
 }
 
 .pure-menu-children {
-  background: white;
-  width: 100% !important;
+  background: #2D2D2D;
+  color: white;
+}
+
+.pure-menu-children .pure-menu-item {
+  padding-top: 10%;
+  text-align: center;
 }
 
 .navbar a {
   color: #2D2D2D;
+}
+
+.pure-menu-children .pure-menu-item .pure-menu-link {
+  color: white;
 }
 
 .navbar a:active,
@@ -101,4 +110,25 @@ code {
 .logo {
   padding-top: 5%;
   height: 25%;
+}
+
+.mint-container {
+  height: 60vh;
+  background-color: #2D645D;
+  text-align: center;
+}
+
+.mint-container h1{
+  color: white;
+  font-size: 3em;
+}
+
+.mint-form-entry {
+  text-align: center !important;
+  margin: 0 auto !important;
+  margin-bottom: 1em !important;
+}
+
+.mint-button {
+  font-size: 150%;
 }

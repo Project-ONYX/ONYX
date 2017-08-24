@@ -6,6 +6,7 @@ import { Switch, Route } from 'react-router-dom'
 import Requester from './Requester'
 import Engineer from './Engineer'
 import Home from './Home'
+import Mint from './Mint'
 
 class Main extends Component {
 	render() {
@@ -15,6 +16,7 @@ class Main extends Component {
 		          <Route exact path='/' component={Home} />
 		          <Route exact path='/Requester' component={Requester} />
 		          <Route exact path='/Engineer' component={Engineer} />
+		          <Route exact path='/Mint' component={Mint} />
 		        </Switch>
 			</div>
 		)

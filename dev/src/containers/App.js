@@ -18,8 +18,27 @@ class App extends Component {
     this.state = {
       account: null,
       balance: 0,
+      Onyx: null,
       web3: null
     }
+  }
+
+  updateBalance() {
+    // Declaring this for later so we can chain functions on OnyxToken.
+    var OnyxInstance
+
+    // Get accounts.
+    this.state.web3.eth.getAccounts((error, accounts) => {
+      this.state.Onyx.deployed().then((instance) => {
+        OnyxInstance = instance
+        this.setState({ account: accounts[0] })
+        // Get the value from the contract to prove it worked.
+        return OnyxInstance.balanceOf.call(accounts[0])
+      }).then((result) => {
+        // Update state with the result.
+        return this.setState({ balance: result.c[0] })
+      })
+    })
   }
 
   componentWillMount() {
@@ -35,8 +54,9 @@ class App extends Component {
       // Instantiate contract once web3 provided.
       this.instantiateContract()
     })
-    .catch(() => {
+    .catch((e) => {
       console.log('Error finding web3.')
+      console.log(e)
     })
   }
 
@@ -52,21 +72,21 @@ class App extends Component {
     const Onyx = contract(OnyxTokenContract)
     Onyx.setProvider(this.state.web3.currentProvider)
 
-    // Declaring this for later so we can chain functions on OnyxToken.
-    var OnyxInstance
+    this.setState({ Onyx: Onyx })
 
-    // Get accounts.
-    this.state.web3.eth.getAccounts((error, accounts) => {
-      Onyx.deployed().then((instance) => {
-        OnyxInstance = instance
-        this.setState({ account: accounts[0] })
-        // Get the value from the contract to prove it worked.
-        return OnyxInstance.balanceOf.call(accounts[0])
-      }).then((result) => {
-        // Update state with the result.
-        return this.setState({ balance: result.c[0] })
+    var onyx
+
+    this.state.Onyx.deployed().then(function(instance) {
+      onyx = instance
+      var transfers = onyx.Transfer({fromBlock: "latest"})
+      transfers.watch(function(error, result) {
+        if (error == null) {
+          this.updateBalance()
+        }
       })
     })
+
+    this.updateBalance()
   }
 
   render() {
@@ -76,9 +96,11 @@ class App extends Component {
           account={this.state.account}
           balance={this.state.balance}
         />
-        <Main />
+        <Main 
+          web3={this.state.web3}
+        />
       </div>
-    );
+    )
   }
 }
 
