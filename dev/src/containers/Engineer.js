@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
+import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import Table from '../components/Table'
 import getWeb3 from '../utils/getWeb3'
 
@@ -12,10 +13,12 @@ class Engineer extends Component {
 			web3: "",
 			Onyx: "",
 			Factory: "",
+			REContract: "",
 			tableData: []
 		}
 
 		this.getEvents = this.getEvents.bind(this)
+		this.handleClaim = this.handleClaim.bind(this)
 	}
 
   	componentWillMount() {
@@ -38,11 +41,39 @@ class Engineer extends Component {
 	    const contract = require('truffle-contract')
 	    const Onyx = contract(OnyxTokenContract)
 	    const Factory = contract(ReqEngContractFactory)
+	    const REContract = contract(ReqEngContract)
 	    Onyx.setProvider(this.state.web3.currentProvider)
 	    Factory.setProvider(this.state.web3.currentProvider)
+	    REContract.setProvider(this.state.web3.currentProvider)
 	    this.setState({ Onyx: Onyx })
 	    this.setState({ Factory: Factory })
+	    this.setState({ REContract: REContract })
 	    this.getEvents()
+  	}
+
+  	handleClaim(event) {
+  		console.log(event)
+
+		var reContract
+		var onyx
+		var stake
+
+		this.state.web3.eth.getAccounts((error, accounts) => {
+			this.state.Onyx.deployed().then((instance) => {
+				onyx = instance
+				onyx.getStake.call().then((_stake) => {
+					stake = _stake
+					onyx.approve(event, stake.toNumber(), {from: accounts[0]}).then(() => {
+						this.state.REContract.at(event).then((instance) => {
+							reContract = instance
+							reContract.claim({from: accounts[0]}).then(() => {
+								console.log("Claimed " + event)
+							})
+						})
+					})
+				})
+			})
+		})
   	}
 
   	getEvents() {
@@ -52,7 +83,13 @@ class Engineer extends Component {
   				var i = 0
   				var table = logs.map(log => {
   					i++
-  					return [i, log.args._contract, log.args._req, log.args.value.toNumber()]
+  					return [
+  						i, 
+  						log.args._contract, 
+  						log.args._req, 
+  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
+  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
+  					]
   				})
   				this.setState({ tableData: table })
   			})
@@ -60,7 +97,7 @@ class Engineer extends Component {
   	}
 
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value"]
+		var headers = ["#", "Contract", "Requester", "Value", "Claim"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData

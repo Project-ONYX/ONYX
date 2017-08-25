@@ -133,6 +133,18 @@ code {
   text-align: center !important;
   margin: 0 auto !important;
   margin-bottom: 1em !important;
+  color: black;
+}
+
+.requester-deploy-form-entry {
+  text-align: center !important;
+  color: black;
+  height: 100%;
+  margin-right: 1em;
+}
+
+.requester-deploy-button {
+  height: 100%;
 }
 
 .requester-button {

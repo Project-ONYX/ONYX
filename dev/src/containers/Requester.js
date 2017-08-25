@@ -77,8 +77,10 @@ class Requester extends Component {
 		})
 	}
 
-	handleDeploy(event) {
-		console.log(event)
+	handleDeploy(index, address, event) {
+		event.preventDefault()
+		var value = document.getElementById(index + "_deploy").value
+		console.log(value)
 
 		var reContract
 		var onyx
@@ -89,11 +91,12 @@ class Requester extends Component {
 				onyx = instance
 				onyx.getStake.call().then((_stake) => {
 					stake = _stake
-					onyx.approve(event, stake.toNumber(), {from: accounts[0]}).then(() => {
-						this.state.REContract.at(event).then((instance) => {
+					console.log(accounts[0])
+					onyx.approve(address, stake.toNumber(), {from: accounts[0]}).then(() => {
+						this.state.REContract.at(address).then((instance) => {
 							reContract = instance
-							reContract.transferStake({from: accounts[0], value: 10}).then(() => {
-								console.log("Deployed " + event)
+							reContract.transferStake.sendTransaction({from: accounts[0], value: this.state.web3.toWei(value, 'ether')}).then(() => {
+								console.log("Deployed " + address)
 							})
 						})
 					})
@@ -109,11 +112,15 @@ class Requester extends Component {
   				var i = 0
   				var table = logs.map(log => {
   					i++
+  					var index = i;
   					return [
-  						i, 
+  						index, 
   						log.args._contract, 
-  						log.args._deadline.toNumber(), 
-  						<button className="button pure-button" onClick={() => this.handleDeploy(log.args._contract)}>Deploy</button>
+  						log.args._deadline.toNumber(),
+  						<form onSubmit={(e) => this.handleDeploy(index, log.args._contract, e)} >
+						    <input className="requester-deploy-form-entry" placeholder="ETH" id={index + "_deploy"} />
+	  						<button className="button pure-button requester-deploy-button">Deploy</button>
+ 						</form>
   					]
   				})
   				this.setState({ tableData: table })
