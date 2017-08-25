@@ -99,18 +99,67 @@ code {
 
 .home-container h1 {
   color: white;
-  font-size: 3em;
+  font-size: 2em;
 }
 
 .home-container h2 {
   color: white;
-  font-size: 1.5em;
+  font-size: 1em;
+  margin-top: 1%;
 }
 
 .logo {
-  padding-top: 5%;
-  height: 25%;
+  padding-top: 2em;
+  height: 50%;
 }
+
+.logo-holder {
+  height: 100%;
+  width: 100%;
+}
+
+.requester-container {
+  height: 60vh;
+  background-color: #2D2D2D;
+  text-align: center;
+}
+
+.requester-container h1{
+  color: white;
+  font-size: 3em;
+}
+
+.requester-form-entry {
+  text-align: center !important;
+  margin: 0 auto !important;
+  margin-bottom: 1em !important;
+}
+
+.requester-button {
+  font-size: 150%;
+}
+
+.engineer-container {
+  height: 60vh;
+  background-color: #2D2D2D;
+  text-align: center;
+}
+
+.engineer-container h1{
+  color: white;
+  font-size: 3em;
+}
+
+.engineer-form-entry {
+  text-align: center !important;
+  margin: 0 auto !important;
+  margin-bottom: 1em !important;
+}
+
+.engineer-button {
+  font-size: 150%;
+}
+
 
 .mint-container {
   height: 60vh;
@@ -131,4 +180,22 @@ code {
 
 .mint-button {
   font-size: 150%;
+}
+
+.transfer-container {
+  height: 60vh;
+  background-color: #BA3F3F;
+  text-align: center;
+}
+
+.transfer-container h1{
+  color: white;
+  font-size: 3em;
+  margin-bottom: 0.5em;
+}
+
+.transfer-form-entry {
+  text-align: center !important;
+  margin: 0 auto !important;
+  margin-bottom: 1em !important;
 }

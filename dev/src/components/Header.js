@@ -8,7 +8,8 @@ class Header extends Component {
 		        <ul className="pure-menu-list">
 		          <li className="pure-menu-item"><a href="/Requester" className="pure-menu-link">Requester</a></li>
 		          <li className="pure-menu-item"><a href="/Engineer" className="pure-menu-link">Engineer</a></li>
-		          <li className="pure-menu-item"><a href="/Mint" className="pure-menu-link">Mint</a></li>
+                  <li className="pure-menu-item"><a href="/Mint" className="pure-menu-link">Mint</a></li>
+		          <li className="pure-menu-item"><a href="/Transfer" className="pure-menu-link">Transfer</a></li>
 		        </ul>
 		        <ul className="pure-menu-list pull-right">
 		          <li className="pure-menu-item pure-menu-has-children pure-menu-allow-hover">
