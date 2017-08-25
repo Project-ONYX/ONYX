@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
+import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import Table from '../components/Table'
 import getWeb3 from '../utils/getWeb3'
 
@@ -7,8 +9,13 @@ class Engineer extends Component {
 		super(props)
 
 		this.state = {
-			web3: ""
+			web3: "",
+			Onyx: "",
+			Factory: "",
+			tableData: []
 		}
+
+		this.getEvents = this.getEvents.bind(this)
 	}
 
   	componentWillMount() {
@@ -19,7 +26,7 @@ class Engineer extends Component {
 	      })
 
 	      // Instantiate contract once web3 provided.
-	      this.instantiateListener()
+	      this.instantiateContract()
 	    })
 	    .catch((e) => {
 	      console.log('Error finding web3.')
@@ -27,35 +34,43 @@ class Engineer extends Component {
 	    })
   	}
 
-  	instantiateListener() {
-		const filter = this.state.web3.eth.filter({
-			fromBlock: 0,
-		  	toBlock: 'latest',
-		  	topics: [this.state.web3.sha3('Mint(address,uint256)')]
-		})
+  	instantiateContract() {
+	    const contract = require('truffle-contract')
+	    const Onyx = contract(OnyxTokenContract)
+	    const Factory = contract(ReqEngContractFactory)
+	    Onyx.setProvider(this.state.web3.currentProvider)
+	    Factory.setProvider(this.state.web3.currentProvider)
+	    this.setState({ Onyx: Onyx })
+	    this.setState({ Factory: Factory })
+	    this.getEvents()
+  	}
 
-		filter.watch((error, result) => {
-		   	console.log(result)
-		})
+  	getEvents() {
+  		this.state.Factory.deployed().then((instance) => {
+ 			let event = instance.Deployed({}, {fromBlock: 0, toBlock: 'latest'})
+  			event.get((error, logs) => {
+  				var i = 0
+  				var table = logs.map(log => {
+  					i++
+  					return [i, log.args._contract, log.args._req, log.args.value.toNumber()]
+  				})
+  				this.setState({ tableData: table })
+  			})
+  		})
   	}
 
 	render() {
-		var headers = ["#", "Make", "Model", "Year"]
-		var data = [
-			[1, "Honda", "Accord", 2009],
-			[2, "Toyota", "Camry", 2001],
-			[3, "Tesla", "Model X", 2017]
-		]
+		var headers = ["#", "Contract", "Requester", "Value"]
 		var table = {
 			headers:headers,
-			data:data
+			data:this.state.tableData
 		}
 		return (
 	        <main>
 	        	<div className="container engineer-container">
 					<h1>Engineer</h1>
 				</div>
-				<Table table={table} />
+				<Table classes="engineer-table" table={table} />
 	        </main>
 		)
 	}

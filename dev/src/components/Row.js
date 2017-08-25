@@ -2,12 +2,21 @@ import React, { Component } from 'react'
 
 class Row extends Component {
   render() {
+  	var i = 0;
     let row = this.props.data.map(column => {
-      return <td key={column}>{column}</td>
+    	i++
+        return <td key={i}>{column}</td>
     })
-    return (
-      <tr>{row}</tr>
-    )
+    if(this.props.index % 2 === 0) {
+    	return (
+      		<tr className="active-row">{row}</tr>
+    	)
+    } else {
+    	return (
+      		<tr className="active-row">{row}</tr>
+    	)
+    }
+
   }
 }
 

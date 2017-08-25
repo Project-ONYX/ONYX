@@ -139,6 +139,12 @@ code {
   font-size: 150%;
 }
 
+.requester-table {
+  margin: 0 auto;
+  margin-top: 2em;
+  width: 80%;
+}
+
 .engineer-container {
   height: 60vh;
   background-color: #2D2D2D;
@@ -160,6 +166,16 @@ code {
   font-size: 150%;
 }
 
+.engineer-table {
+  margin: 0 auto;
+  margin-top: 2em;
+  width: 80%;
+}
+
+.active-row:hover {
+  background-color: #2D2D2D;
+  color: white;
+}
 
 .mint-container {
   height: 60vh;

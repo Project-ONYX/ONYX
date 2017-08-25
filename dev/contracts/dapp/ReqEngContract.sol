@@ -4,6 +4,7 @@ import '../lib/math/SafeMath.sol';
 import '../token/OnyxToken.sol';
 import '../lib/Ownable.sol';
 import './ValidatorNetwork.sol';
+import './ReqEngContractFactory.sol';
 
 /**
  * @title ReqEngContract
@@ -14,12 +15,13 @@ import './ValidatorNetwork.sol';
 contract ReqEngContract is Ownable {
     using SafeMath for uint256;
 
-    address Requester;
-    address Engineer;
-    address Validator;
+    address public Requester;
+    address public Engineer;
+    address public Validator;
 
     OnyxToken Onyx;
     ValidatorNetwork Validators;
+    ReqEngContractFactory Factory;
 
     uint256 deadline;
     uint256 stake;
@@ -32,11 +34,13 @@ contract ReqEngContract is Ownable {
     event Deployed(address indexed _req, uint256 value);
     event Claimed(address indexed _req, address indexed _eng, uint256 value);
     event Validated(address indexed _req, address indexed _eng, address indexed _val, uint256 value);
+    event Deadline(address indexed _req, uint256 value);
 
-    function ReqEngContract(address _req, address _onyx, address _validators, uint256 _deadline) {
+    function ReqEngContract(address _req, address _onyx, address _validators, address _factory, uint256 _deadline) {
     	Requester = _req;
     	Onyx = OnyxToken(_onyx);
     	Validators = ValidatorNetwork(_validators);
+        Factory = ReqEngContractFactory(_factory);
 	   	stake = Onyx.getStake();
 	   	fee = Onyx.getFee();
     	active = false;
@@ -52,6 +56,7 @@ contract ReqEngContract is Ownable {
     	Onyx.transferFrom(msg.sender, this, stake);
     	active = true;
     	Deployed(Requester, this.balance);
+        Factory.deployContract();
     	return active;
     }
 
@@ -85,6 +90,7 @@ contract ReqEngContract is Ownable {
 		Engineer = msg.sender;
 		claimed = true;
 		Claimed(Requester, Engineer, this.balance);
+        Factory.claimContract();
 		return true;
     }
 
@@ -104,6 +110,8 @@ contract ReqEngContract is Ownable {
         if(claimed) {
             Onyx.transfer(Engineer, stake);
         }
+        Deadline(Requester, this.balance);
+        Factory.deadlineContract();
         selfdestruct(Requester);
     }
 
@@ -112,6 +120,8 @@ contract ReqEngContract is Ownable {
             Validator = _validator;
     		Onyx.transfer(Requester, stake);
             Onyx.transfer(Engineer, stake);
+            Validated(Requester, Engineer, Validator, this.balance);
+            Factory.validateContract();
             selfdestruct(Engineer);
    		} else {
             validating = false;
