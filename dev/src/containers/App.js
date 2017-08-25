@@ -16,10 +16,10 @@ class App extends Component {
     super(props)
 
     this.state = {
-      account: null,
+      account: "",
       balance: 0,
-      Onyx: null,
-      web3: null
+      Onyx: "",
+      web3: ""
     }
 
     this.updateBalance = this.updateBalance.bind(this);

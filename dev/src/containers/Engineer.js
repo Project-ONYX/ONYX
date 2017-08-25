@@ -1,30 +1,43 @@
 import React, { Component } from 'react'
 import Table from '../components/Table'
+import getWeb3 from '../utils/getWeb3'
 
 class Engineer extends Component {
 	constructor(props) {
 		super(props)
 
 		this.state = {
-			value: ""
+			web3: ""
 		}
 	}
 
   	componentWillMount() {
+	    getWeb3
+	    .then(results => {
+	      this.setState({
+	        web3: results.web3
+	      })
+
+	      // Instantiate contract once web3 provided.
+	      this.instantiateListener()
+	    })
+	    .catch((e) => {
+	      console.log('Error finding web3.')
+	      console.log(e)
+	    })
   	}
 
-	getTasks() {
-		const filter = this.props.web3.eth.filter({
+  	instantiateListener() {
+		const filter = this.state.web3.eth.filter({
 			fromBlock: 0,
 		  	toBlock: 'latest',
-		  	// topics: [this.props.web3.sha3('Deployed(address,uint256)')]
-		  	topics: [this.props.web3.sha3('Mint(address,uint256)')]
+		  	topics: [this.state.web3.sha3('Mint(address,uint256)')]
 		})
 
 		filter.watch((error, result) => {
 		   	console.log(result)
 		})
-	}
+  	}
 
 	render() {
 		var headers = ["#", "Make", "Model", "Year"]
@@ -35,7 +48,7 @@ class Engineer extends Component {
 		]
 		var table = {
 			headers:headers,
-			data,data
+			data:data
 		}
 		return (
 	        <main>
