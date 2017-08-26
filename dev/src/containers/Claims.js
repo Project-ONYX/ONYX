@@ -18,7 +18,6 @@ class Claims extends Component {
 		}
 
 		this.getEvents = this.getEvents.bind(this)
-		this.handleClaim = this.handleClaim.bind(this)
 	}
 
   	componentWillMount() {
@@ -51,31 +50,6 @@ class Claims extends Component {
 	    this.getEvents()
   	}
 
-  	handleClaim(event) {
-  		console.log(event)
-
-		var reContract
-		var onyx
-		var stake
-
-		this.state.web3.eth.getAccounts((error, accounts) => {
-			this.state.Onyx.deployed().then((instance) => {
-				onyx = instance
-				onyx.getStake.call().then((_stake) => {
-					stake = _stake
-					onyx.approve(event, stake.toNumber(), {from: accounts[0]}).then(() => {
-						this.state.REContract.at(event).then((instance) => {
-							reContract = instance
-							reContract.claim({from: accounts[0]}).then(() => {
-								console.log("Claimed " + event)
-							})
-						})
-					})
-				})
-			})
-		})
-  	}
-
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
@@ -98,7 +72,7 @@ class Claims extends Component {
   	}
 
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value"]
+		var headers = ["#", "Contract", "Requester", "Value (ETH)"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData

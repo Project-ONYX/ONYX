@@ -153,7 +153,7 @@ class Pending extends Component {
 			data:this.state.tableData
 		}
 		return (
-	        <div className="marketplace">
+	        <div className="pending">
 	        	<h1>Pending</h1>
 				<Table classes="engineer-table" table={table} />
 	        </div>

@@ -240,6 +240,14 @@ code {
   text-align: center;
 }
 
+.deployed h1 {
+  text-align: center;
+}
+
 .claims h1 {
+  text-align: center;
+}
+
+.pending h1 {
   text-align: center;
 }

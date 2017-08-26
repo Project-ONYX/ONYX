@@ -18,7 +18,6 @@ class Deployed extends Component {
 		}
 
 		this.getEvents = this.getEvents.bind(this)
-		this.handleClaim = this.handleClaim.bind(this)
 	}
 
   	componentWillMount() {
@@ -51,31 +50,6 @@ class Deployed extends Component {
 	    this.getEvents()
   	}
 
-  	handleClaim(event) {
-  		console.log(event)
-
-		var reContract
-		var onyx
-		var stake
-
-		this.state.web3.eth.getAccounts((error, accounts) => {
-			this.state.Onyx.deployed().then((instance) => {
-				onyx = instance
-				onyx.getStake.call().then((_stake) => {
-					stake = _stake
-					onyx.approve(event, stake.toNumber(), {from: accounts[0]}).then(() => {
-						this.state.REContract.at(event).then((instance) => {
-							reContract = instance
-							reContract.claim({from: accounts[0]}).then(() => {
-								console.log("Claimed " + event)
-							})
-						})
-					})
-				})
-			})
-		})
-  	}
-
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
@@ -88,23 +62,48 @@ class Deployed extends Component {
 	  						i, 
 	  						log.args._contract, 
 	  						log.args._req, 
-	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether")
+	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"),
+	  						""
 	  					]
 	  				})
-	  				this.setState({ tableData: table })
+	  				
+	  				let claimEvent = instance.Claimed({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+	  				claimEvent.get((error, logs) => {
+	  					var j = 0
+	  					var claimTable = logs.map(log => {
+	  						j++
+	  						return [
+	  							j,
+	  							log.args._contract,
+	  							log.args._req,
+	  							log.args._eng
+	  						]
+	  					})
+	  					claimTable = claimTable.reduce((result, filter) => {
+	  						result[filter[1]] = filter;
+	  						return result;
+	  					},{})
+	  					table = table.map(entry => {
+	  						if(entry[1] in claimTable) {
+	  							entry[4] = claimTable[entry[1]][3]
+	  						}
+	  						return entry
+	  					})
+		  				this.setState({ tableData: table })
+	  				})
 	  			})
 	  		})
   		})
   	}
 
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value (ETH)"]
+		var headers = ["#", "Contract", "Requester", "Value (ETH)", "Engineer"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
 		}
 		return (
-	        <div className="claims">
+	        <div className="deployed">
    	        	<h1>Deployed</h1>
 				<Table classes="engineer-table" table={table} />
 	        </div>
