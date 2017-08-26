@@ -4,11 +4,8 @@ import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.j
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import Table from '../components/Table'
 import getWeb3 from '../utils/getWeb3'
-import { Switch, Route } from 'react-router-dom'
-import Marketplace from './Marketplace'
-import Claims from './Claims'
 
-class Engineer extends Component {
+class Marketplace extends Component {
 	constructor(props) {
 		super(props)
 
@@ -80,22 +77,40 @@ class Engineer extends Component {
   	}
 
   	getEvents() {
-  		this.state.Factory.deployed().then((instance) => {
- 			let event = instance.Deployed({}, {fromBlock: 0, toBlock: 'latest'})
-  			event.get((error, logs) => {
-  				var i = 0
-  				var table = logs.map(log => {
-  					i++
-  					return [
-  						i, 
-  						log.args._contract, 
-  						log.args._req, 
-  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
-  					]
-  				})
-  				this.setState({ tableData: table })
-  			})
+  		this.state.web3.eth.getAccounts((error, accounts) => {
+	  		this.state.Factory.deployed().then((instance) => {
+	 			let event = instance.Deployed({}, {fromBlock: 0, toBlock: 'latest'})
+	  			event.get((error, logs) => {
+	  				var i = 0
+	  				var table = logs.map(log => {
+	  					i++
+	  					return [
+	  						i, 
+	  						log.args._contract, 
+	  						log.args._req, 
+	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
+	  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
+	  					]
+	  				})
+	  				this.setState({ tableData: table })
+	  			}).then(() => {
+	  				let claimEvent = instance.Deployed({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+		  			claimEvent.get((error, logs) => {
+		  				var i = 0
+		  				var table = logs.map(log => {
+		  					i++
+		  					return [
+		  						i, 
+		  						log.args._contract, 
+		  						log.args._req, 
+		  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
+		  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
+		  					]
+		  				})
+		  				this.setState({ tableData: table })
+		  			})
+	   			})
+	  		})
   		})
   	}
 
@@ -107,22 +122,10 @@ class Engineer extends Component {
 		}
 		return (
 	        <main>
-	        	<div className="container engineer-container">
-					<h1>Engineer</h1>
-				</div>
-				<div className="pure-menu pure-menu-horizontal">
-				    <ul className="pure-menu-list">
-				        <li className="pure-menu-item"><a href="/Engineer/Marketplace" className="pure-menu-link">Marketplace</a></li>
-				        <li className="pure-menu-item"><a href="/Engineer/Claims" className="pure-menu-link">Current Claims</a></li>
-				    </ul>
-				</div>
-				<Switch>
-		          	<Route path='/Engineer/Marketplace' render={() => <Marketplace />} />
-		          	<Route path='/Engineer/Claims' render={() => <Claims />} />
-		        </Switch>
+				<Table classes="engineer-table" table={table} />
 	        </main>
 		)
 	}
 }
 
-export default Engineer
+export default Marketplace
