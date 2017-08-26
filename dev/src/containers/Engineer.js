@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
-import Table from '../components/Table'
 import getWeb3 from '../utils/getWeb3'
 import { Switch, Route } from 'react-router-dom'
 import Marketplace from './Marketplace'
@@ -16,12 +15,8 @@ class Engineer extends Component {
 			web3: "",
 			Onyx: "",
 			Factory: "",
-			REContract: "",
-			tableData: []
+			REContract: ""
 		}
-
-		this.getEvents = this.getEvents.bind(this)
-		this.handleClaim = this.handleClaim.bind(this)
 	}
 
   	componentWillMount() {
@@ -51,66 +46,15 @@ class Engineer extends Component {
 	    this.setState({ Onyx: Onyx })
 	    this.setState({ Factory: Factory })
 	    this.setState({ REContract: REContract })
-	    this.getEvents()
-  	}
-
-  	handleClaim(event) {
-  		console.log(event)
-
-		var reContract
-		var onyx
-		var stake
-
-		this.state.web3.eth.getAccounts((error, accounts) => {
-			this.state.Onyx.deployed().then((instance) => {
-				onyx = instance
-				onyx.getStake.call().then((_stake) => {
-					stake = _stake
-					onyx.approve(event, stake.toNumber(), {from: accounts[0]}).then(() => {
-						this.state.REContract.at(event).then((instance) => {
-							reContract = instance
-							reContract.claim({from: accounts[0]}).then(() => {
-								console.log("Claimed " + event)
-							})
-						})
-					})
-				})
-			})
-		})
-  	}
-
-  	getEvents() {
-  		this.state.Factory.deployed().then((instance) => {
- 			let event = instance.Deployed({}, {fromBlock: 0, toBlock: 'latest'})
-  			event.get((error, logs) => {
-  				var i = 0
-  				var table = logs.map(log => {
-  					i++
-  					return [
-  						i, 
-  						log.args._contract, 
-  						log.args._req, 
-  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
-  					]
-  				})
-  				this.setState({ tableData: table })
-  			})
-  		})
   	}
 
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value", "Claim"]
-		var table = {
-			headers:headers,
-			data:this.state.tableData
-		}
 		return (
 	        <main>
 	        	<div className="container engineer-container">
 					<h1>Engineer</h1>
 				</div>
-				<div className="pure-menu pure-menu-horizontal">
+				<div className="pure-menu pure-menu-horizontal sub-menu">
 				    <ul className="pure-menu-list">
 				        <li className="pure-menu-item"><a href="/Engineer/Marketplace" className="pure-menu-link">Marketplace</a></li>
 				        <li className="pure-menu-item"><a href="/Engineer/Claims" className="pure-menu-link">Current Claims</a></li>

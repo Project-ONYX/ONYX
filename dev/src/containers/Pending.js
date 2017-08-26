@@ -5,7 +5,7 @@ import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import Table from '../components/Table'
 import getWeb3 from '../utils/getWeb3'
 
-class Marketplace extends Component {
+class Pending extends Component {
 	constructor(props) {
 		super(props)
 
@@ -18,7 +18,7 @@ class Marketplace extends Component {
 		}
 
 		this.getEvents = this.getEvents.bind(this)
-		this.handleClaim = this.handleClaim.bind(this)
+		this.handleDeploy = this.handleDeploy.bind(this)
 	}
 
   	componentWillMount() {
@@ -53,8 +53,8 @@ class Marketplace extends Component {
 		this.state.web3.eth.getAccounts((error, accounts) => {
 		    this.state.Factory.deployed().then((instance) => {
 		    	factory = instance
-				var claim = factory.Claimed({_eng: accounts[0]}, {fromBlock: "latest"})
-				claim.watch((error, result) => {
+				var newContract = factory.NewContract({_req: accounts[0]}, {fromBlock: "latest"})
+				newContract.watch((error, result) => {
 					if (error == null) {
 				  		this.getEvents()
 					}
@@ -67,11 +67,14 @@ class Marketplace extends Component {
 				})
 		    })
 		})
-
 	    this.getEvents()
   	}
 
-  	handleClaim(event) {
+	handleDeploy(index, address, event) {
+		event.preventDefault()
+		var value = document.getElementById(index + "_deploy").value
+		console.log(value)
+
 		var reContract
 		var onyx
 		var stake
@@ -81,55 +84,61 @@ class Marketplace extends Component {
 				onyx = instance
 				onyx.getStake.call().then((_stake) => {
 					stake = _stake
-					onyx.approve(event, stake.toNumber(), {from: accounts[0]}).then(() => {
-						this.state.REContract.at(event).then((instance) => {
+					console.log(accounts[0])
+					onyx.approve(address, stake.toNumber(), {from: accounts[0]}).then(() => {
+						this.state.REContract.at(address).then((instance) => {
 							reContract = instance
-							reContract.claim({from: accounts[0]}).then(() => {
-								console.log("Claimed " + event)
+							reContract.transferStake.sendTransaction({from: accounts[0], value: this.state.web3.toWei(value, 'ether')}).then(() => {
+								console.log("Deployed " + address)
 							})
 						})
 					})
 				})
 			})
 		})
-  	}
+	}
 
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 	  		this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Deployed({}, {fromBlock: 0, toBlock: 'latest'})
+	 			let event = instance.NewContract({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				var i = 0
 	  				var table = logs.map(log => {
 	  					i++
+	  					var index = i;
 	  					return [
-	  						i, 
+	  						index, 
 	  						log.args._contract, 
 	  						log.args._req, 
-	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-	  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
+	  						log.args._deadline.toNumber(),
+	  						<form onSubmit={(e) => this.handleDeploy(index, log.args._contract, e)} >
+							    <input className="requester-deploy-form-entry" placeholder="ETH" id={index + "_deploy"} />
+		  						<button className="button pure-button">Deploy</button>
+		  					</form>
 	  					]
 	  				})
-	  				let claimEvent = instance.Claimed({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
-		  			claimEvent.get((error, logs) => {
+	  				let deployEvent = instance.Deployed({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+		  			deployEvent.get((error, logs) => {
 		  				var j = 0
-		  				var claimTable = logs.map(log => {
+		  				var deployTable = logs.map(log => {
 		  					j++
 		  					return [
 		  						j, 
 		  						log.args._contract, 
 		  						log.args._req, 
-		  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-		  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
+		  						log.args.value.toNumber(), 
+		  						<button className="button pure-button" onClick={() => this.handleDeploy(log.args._contract)}>Deploy</button>
 		  					]
 		  				})
-		  				claimTable = claimTable.reduce((result, filter) => {
+		  				deployTable = deployTable.reduce((result, filter) => {
 						    result[filter[1]] = filter;
 						    return result;
 						},{})
 						table = table.filter(function(entry) {
-							return !(entry[1] in claimTable || entry[2] === accounts[0])
+							return !(entry[1] in deployTable)
 						})
+						console.log(deployTable)
 		  				this.setState({ tableData: table })
 	  				})
 	  			})
@@ -138,18 +147,18 @@ class Marketplace extends Component {
   	}
 
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value", "Claim"]
+		var headers = ["#", "Contract", "Requester", "Deadline", "Deploy"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
 		}
 		return (
 	        <div className="marketplace">
-	        	<h1>Marketplace</h1>
+	        	<h1>Pending</h1>
 				<Table classes="engineer-table" table={table} />
 	        </div>
 		)
 	}
 }
 
-export default Marketplace
+export default Pending

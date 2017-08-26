@@ -3,7 +3,9 @@ import getWeb3 from '../utils/getWeb3'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
-import Table from '../components/Table'
+import { Switch, Route } from 'react-router-dom'
+import Pending from './Pending'
+import Deployed from './Deployed'
 
 class Requester extends Component {
 	constructor(props) {
@@ -15,13 +17,11 @@ class Requester extends Component {
 		  	web3: "",
 		  	Factory: "",
 		  	Onyx: "",
-		  	REContract: "",
-		  	tableData: []
+		  	REContract: ""
 		}
 
 		this.handleChange = this.handleChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
-		this.handleDeploy = this.handleDeploy.bind(this);
 	}
 
   	componentWillMount() {
@@ -56,7 +56,6 @@ class Requester extends Component {
 				account: accounts[0]
 			})
 		})
-	    this.getEvents()
   	}
 
 	handleSubmit(event) {
@@ -77,67 +76,11 @@ class Requester extends Component {
 		})
 	}
 
-	handleDeploy(index, address, event) {
-		event.preventDefault()
-		var value = document.getElementById(index + "_deploy").value
-		console.log(value)
-
-		var reContract
-		var onyx
-		var stake
-
-		this.state.web3.eth.getAccounts((error, accounts) => {
-			this.state.Onyx.deployed().then((instance) => {
-				onyx = instance
-				onyx.getStake.call().then((_stake) => {
-					stake = _stake
-					console.log(accounts[0])
-					onyx.approve(address, stake.toNumber(), {from: accounts[0]}).then(() => {
-						this.state.REContract.at(address).then((instance) => {
-							reContract = instance
-							reContract.transferStake.sendTransaction({from: accounts[0], value: this.state.web3.toWei(value, 'ether')}).then(() => {
-								console.log("Deployed " + address)
-							})
-						})
-					})
-				})
-			})
-		})
-	}
-
- 	getEvents() {
-  		this.state.Factory.deployed().then((instance) => {
- 			let event = instance.NewContract({_req: this.state.account}, {fromBlock: 0, toBlock: 'latest'})
-  			event.get((error, logs) => {
-  				var i = 0
-  				var table = logs.map(log => {
-  					i++
-  					var index = i;
-  					return [
-  						index, 
-  						log.args._contract, 
-  						log.args._deadline.toNumber(),
-  						<form onSubmit={(e) => this.handleDeploy(index, log.args._contract, e)} >
-						    <input className="requester-deploy-form-entry" placeholder="ETH" id={index + "_deploy"} />
-	  						<button className="button pure-button requester-deploy-button">Deploy</button>
- 						</form>
-  					]
-  				})
-  				this.setState({ tableData: table })
-  			})
-  		})
-  	}
-
 	handleChange(event) {
 		this.setState({value: event.target.value})
 	}
 
 	render() {
-		var headers = ["#", "Contract", "Deadline", "Deploy"]
-		var table = {
-			headers:headers,
-			data:this.state.tableData
-		}
 		return (
 	        <main>
 	        	<div className="container requester-container">
@@ -147,7 +90,16 @@ class Requester extends Component {
 					    <button className="button-xlarge pure-button requester-button">Request Task</button>
 					</form>
 				</div>
-				<Table classes="requester-table" table={table} />
+				<div className="pure-menu pure-menu-horizontal sub-menu">
+				    <ul className="pure-menu-list">
+				        <li className="pure-menu-item"><a href="/Requester/Pending" className="pure-menu-link">Pending Tasks</a></li>
+				        <li className="pure-menu-item"><a href="/Requester/Deployed" className="pure-menu-link">Deployed Tasks</a></li>
+				    </ul>
+				</div>
+				<Switch>
+		          	<Route path='/Requester/Pending' render={() => <Pending />} />
+		          	<Route path='/Requester/Deployed' render={() => <Deployed />} />
+		        </Switch>
 	        </main>
 		)
 	}

@@ -86,8 +86,16 @@ code {
   float: right;
 }
 
+.App {
+  padding-bottom: 10%;
+}
+
 .content {
   padding-top: 2em;
+}
+
+.sub-menu {
+  background-color: #E0E0E0;
 }
 
 .home-container {
@@ -226,4 +234,12 @@ code {
   text-align: center !important;
   margin: 0 auto !important;
   margin-bottom: 1em !important;
+}
+
+.marketplace h1 {
+  text-align: center;
+}
+
+.claims h1 {
+  text-align: center;
 }

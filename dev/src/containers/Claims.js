@@ -88,8 +88,7 @@ class Claims extends Component {
 	  						i, 
 	  						log.args._contract, 
 	  						log.args._req, 
-	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-	  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
+	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether")
 	  					]
 	  				})
 	  				this.setState({ tableData: table })
@@ -99,15 +98,16 @@ class Claims extends Component {
   	}
 
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value", "Claim"]
+		var headers = ["#", "Contract", "Requester", "Value"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
 		}
 		return (
-	        <main>
+	        <div className="claims">
+   	        	<h1>Claims</h1>
 				<Table classes="engineer-table" table={table} />
-	        </main>
+	        </div>
 		)
 	}
 }
