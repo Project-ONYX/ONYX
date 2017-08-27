@@ -24,7 +24,7 @@ contract('ValidatorNetwork', function(accounts) {
 		}
 
 		try {
-			let stake = await onyx.getStake();
+			let stake = await onyx.stake.call();
 			await onyx.approve(valNet.address, stake.toNumber()-1, {from: accounts[0]});
 			await valNet.newValidator({from: accounts[0]});
 		} catch(error) {
@@ -33,7 +33,7 @@ contract('ValidatorNetwork', function(accounts) {
 	});
 
 	it("should succeed at adding and deleting Validator from network", async function() {
-		let stake = await onyx.getStake();
+		let stake = await onyx.stake.call();
 		await onyx.approve(valNet.address, stake.toNumber(), {from: accounts[0]});
 		await valNet.newValidator({from: accounts[0]});
 		let stake_held = await valNet.amValidator(accounts[0]);
@@ -49,7 +49,7 @@ contract('ValidatorNetwork', function(accounts) {
 	});
 
 	it("should add and delete a Validator twice", async function() {
-		let stake = await onyx.getStake();
+		let stake = await onyx.stake.call();
 		await onyx.approve(valNet.address, stake.toNumber(), {from: accounts[0]});
 		await valNet.newValidator({from: accounts[0]});
 		let stake_held = await valNet.amValidator(accounts[0]);
@@ -81,7 +81,7 @@ contract('ValidatorNetwork', function(accounts) {
     	let account = accounts[0];
 
 	    await onyx.callVote("Stake", {from: account});
-	    let endVoteBlock = await onyx.getEndVoteBlock();
+	    let endVoteBlock = await onyx.endVoteBlock();
 	    while(web3.eth.blockNumber <= endVoteBlock) {
 	      await advanceBlock();
 	    }
@@ -90,15 +90,15 @@ contract('ValidatorNetwork', function(accounts) {
 	    let hasVoted = await onyx.hasVoted(accounts[0], "Stake");
 	    let hasNotVoted = await onyx.hasVoted(accounts[1], "Stake");
 
-	    let endVoteBlock2 = await onyx.getEndVoteBlock();
+	    let endVoteBlock2 = await onyx.endVoteBlock();
 	    while(web3.eth.blockNumber <= endVoteBlock2) {
 	      await advanceBlock();
 	    }
 	    await onyx.callVote("Stake");
-	    let newStake = await onyx.getStake();
+	    let newStake = await onyx.stake.call();
 
 	    await valNet.updateStake();
-	    let valNetStake = await valNet.getStake();
+	    let valNetStake = await valNet.stake.call();
 
 	    assert.isTrue(votingActive);
 	    assert.isTrue(hasVoted);

@@ -17,7 +17,7 @@ contract ReqEngContractFactory {
     address onyx;
     address valNet;
 
-    event NewContract(address indexed _contract, address indexed _req, uint256 _deadline);
+    event NewContract(address indexed _contract, address indexed _req, uint256 _deadline, string _dataHash);
     event Deployed(address indexed _contract, address indexed _req, uint256 value);
     event Claimed(address indexed _contract, address indexed _req, address indexed _eng, uint256 value);
     event Validated(address indexed _contract, address indexed _req, address indexed _eng, address _val, uint256 value);
@@ -28,12 +28,12 @@ contract ReqEngContractFactory {
         valNet = _validators;
     }
 
-    function newContract(uint256 _deadline) returns (address) {
+    function newContract(uint256 _deadline, string _dataHash) returns (address) {
         address req = msg.sender;
-        address contractAddr = new ReqEngContract(req, onyx, valNet, this, _deadline);
+        address contractAddr = new ReqEngContract(req, onyx, valNet, this, _deadline, _dataHash);
         ReqEngContract(contractAddr).transferOwnership(req);
         outstandingContracts[contractAddr] = 1;
-        NewContract(contractAddr, req, _deadline);
+        NewContract(contractAddr, req, _deadline, _dataHash);
         return contractAddr;
     }
 

@@ -44,5 +44,4 @@ contract('Ownable', function(accounts) {
       assertJump(error);
     }
   });
-
 });

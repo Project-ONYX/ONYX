@@ -4,24 +4,28 @@ import {advanceBlock} from './helpers/advanceToBlock';
 var ReqEngContract = artifacts.require("./ReqEngContract.sol");
 var ValidatorNetwork = artifacts.require("./ValidatorNetwork.sol");
 var OnyxToken = artifacts.require("./OnyxToken.sol");
+var Factory = artifacts.require("./ReqEngContractFactory.sol");
 const assertJump = require('./helpers/assertJump');
 
 contract('ReqEngContract', function(accounts) {
 	let onyx;
 	let valNet;
 	let reContract;
+	let factory;
 
 	beforeEach(async function() {
 		onyx = await OnyxToken.new(20, 20, 10, 1, 10);
 		valNet = await ValidatorNetwork.new(onyx.address);
+		factory = await Factory.new(onyx.address, valNet.address);
+		reContract = await factory.newContract(web3.eth.blockNumber + 20, "3f0s0f903");
+		reContract = ReqEngContract.at(reContract.logs[0].args._contract);
 		await onyx.mint(accounts[0], 1000);
-		reContract = await ReqEngContract.new(accounts[0], onyx.address, valNet.address, web3.eth.blockNumber + 20);
 	});
 
 	it("should fail at transferring stake", async function() {
 		try {
-			let stake = await onyx.getStake();
-			await reContract.transferStake({value: 100});
+			let stake = await onyx.stake.call();
+			await reContract.transferStake.sendTransaction({from: accounts[0], value: 1});
 			assert.fail("Should have failed");
 		} catch(error) {
 			assertJump(error);
@@ -29,18 +33,18 @@ contract('ReqEngContract', function(accounts) {
 	});
 
 	it("should succeed at transferring stake", async function() {
-		let stake = await onyx.getStake();
+		let stake = await onyx.stake.call();
 		await onyx.approve(reContract.address, stake.toNumber(), {from: accounts[0]});
-		await reContract.transferStake({value: 100});
+		await reContract.transferStake.sendTransaction({},{from: accounts[0], value: web3.toWei(1, 'ether')});
 		let activation = await reContract.isActive.call();
 		assert.isTrue(activation);
 	});
 
 	it("should claim a contract", async function() {
 		await onyx.mint(accounts[1], 1000);
-		let stake = await onyx.getStake();
+		let stake = await onyx.stake.call();
 		await onyx.approve(reContract.address, stake.toNumber(), {from: accounts[0]});
-		await reContract.transferStake({from: accounts[0], value: 100});
+		await reContract.transferStake.sendTransaction({from: accounts[0], value: 1});
 		await onyx.approve(reContract.address, stake.toNumber(), {from: accounts[1]});
 		await reContract.claim({from: accounts[1]});
 		let claimed = await reContract.isClaimed.call();
@@ -56,13 +60,13 @@ contract('ReqEngContract', function(accounts) {
 	});
 
 	it("should succeed at calling deadline", async function() {
-		let endBlock = await reContract.getDeadline.call();
-		while(web3.eth.blockNumber <= endBlock) {
+		let endBlock = await reContract.deadline.call();
+		while(web3.eth.blockNumber <= endBlock.toNumber()) {
 			await advanceBlock();
 		}
-		let stake = await onyx.getStake();
+		let stake = await onyx.stake.call();
 		await onyx.approve(reContract.address, stake.toNumber(), {from: accounts[0]});
-		await reContract.transferStake({from: accounts[0], value: 100});
+		await reContract.transferStake.sendTransaction({from: accounts[0], value: 1});
 		let origReqBalance = await onyx.balanceOf.call(accounts[0]);
 		await reContract.callDeadline({from: accounts[0]});
 		let reqBalance = await onyx.balanceOf.call(accounts[0]);

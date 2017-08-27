@@ -23,26 +23,29 @@ contract ReqEngContract is Ownable {
     ValidatorNetwork Validators;
     ReqEngContractFactory Factory;
 
-    uint256 deadline;
-    uint256 stake;
-    uint256 fee;
+    uint256 public deadline;
+    uint256 public stake;
+    uint256 public fee;
+
+    string dataHash;
 
     bool active;
     bool claimed;
     bool validating;
 
-    event Deployed(address indexed _req, uint256 value);
+    event Deployed(address indexed _req, uint256 value, string _data);
     event Claimed(address indexed _req, address indexed _eng, uint256 value);
     event Validated(address indexed _req, address indexed _eng, address indexed _val, uint256 value);
     event Deadline(address indexed _req, uint256 value);
 
-    function ReqEngContract(address _req, address _onyx, address _validators, address _factory, uint256 _deadline) {
+    function ReqEngContract(address _req, address _onyx, address _validators, address _factory, uint256 _deadline, string _dataHash) {
     	Requester = _req;
     	Onyx = OnyxToken(_onyx);
     	Validators = ValidatorNetwork(_validators);
         Factory = ReqEngContractFactory(_factory);
-	   	stake = Onyx.getStake();
-	   	fee = Onyx.getFee();
+	   	stake = Onyx.stake();
+	   	fee = Onyx.fee();
+        dataHash = _dataHash;
     	active = false;
     	claimed = false;
     	deadline = _deadline;
@@ -55,7 +58,7 @@ contract ReqEngContract is Ownable {
     function transferStake() onlyOwner isApproved payable returns (bool) {
     	Onyx.transferFrom(msg.sender, this, stake);
     	active = true;
-    	Deployed(Requester, this.balance);
+    	Deployed(Requester, this.balance, dataHash);
         Factory.deployContract();
     	return active;
     }

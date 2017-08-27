@@ -105,7 +105,7 @@ contract('OnyxToken', function(accounts) {
     let account = accounts[0];
 
     await onyx.callVote("Stake", {from: account});
-    let endVoteBlock = await onyx.getEndVoteBlock();
+    let endVoteBlock = await onyx.endVoteBlock();
     while(web3.eth.blockNumber <= endVoteBlock) {
       await advanceBlock();
     }
@@ -116,12 +116,12 @@ contract('OnyxToken', function(accounts) {
 
     await onyx.transfer(accounts[1], 500);
 
-    let endVoteBlock2 = await onyx.getEndVoteBlock();
+    let endVoteBlock2 = await onyx.endVoteBlock();
     while(web3.eth.blockNumber <= endVoteBlock2) {
       await advanceBlock();
     }
     await onyx.callVote("Stake");
-    let newStake = await onyx.getStake();
+    let newStake = await onyx.stake.call();
 
     assert.isTrue(votingActive);
     assert.isTrue(hasVoted);

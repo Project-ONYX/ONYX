@@ -1,5 +1,4 @@
 'use strict';
-
 import expectThrow from './helpers/expectThrow';
 var MintableToken = artifacts.require('./MintableToken.sol');
 

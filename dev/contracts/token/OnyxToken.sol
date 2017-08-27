@@ -20,13 +20,13 @@ contract OnyxToken is ERC20, MintableToken {
     string public constant symbol = "ONYX";
     uint8 public constant decimals = 18;
     
-    uint fee;
-    uint stake;
-    uint callToVoteThreshold;
-    uint voteEffectiveThreshold;
-    uint256 votingBlockWindowSize;
-    uint256 currentVoteBlock;
-    uint256 endVoteBlock;
+    uint public fee;
+    uint public stake;
+    uint public callToVoteThreshold;
+    uint public voteEffectiveThreshold;
+    uint256 public votingBlockWindowSize;
+    uint256 public currentVoteBlock;
+    uint256 public endVoteBlock;
 
     struct VoteStruct {
         uint256 blockNum;
@@ -43,7 +43,7 @@ contract OnyxToken is ERC20, MintableToken {
 
     mapping (string => uint) voteTypes;
 
-    string[2] voteTypesArr;
+    string[1] voteTypesArr;
 
     mapping (string => uint256) voteCalls;
     mapping (string => VoteCounter) votes;
@@ -75,11 +75,8 @@ contract OnyxToken is ERC20, MintableToken {
         currentVoteBlock = block.number;                            // Current block window start block
         endVoteBlock = currentVoteBlock.add(votingBlockWindowSize); // End of current vote window block
 
-        voteTypes["Fee"] = 1;
-        voteTypes["Stake"] = 2;
-        voteTypesArr[0] = "Fee";
-        voteTypesArr[1] = "Stake";
-        votingActive["Fee"] = false;
+        voteTypes["Stake"] = 1;
+        voteTypesArr[0] = "Stake";
         votingActive["Stake"] = false;
     }
 
@@ -119,24 +116,6 @@ contract OnyxToken is ERC20, MintableToken {
         }
         Transfer(_from, _to, _value);
         return true;
-    }
-
-    /**
-    * @dev Getter method for stake variable
-    */
-    function getStake() constant returns (uint) {
-        return stake;
-    }
-
-    /**
-    * @dev Getter method for fee variable
-    */
-    function getFee() constant returns (uint) {
-        return fee;
-    }    
-
-    function getEndVoteBlock() constant returns (uint256) {
-        return endVoteBlock;
     }
 
     /**
@@ -226,20 +205,6 @@ contract OnyxToken is ERC20, MintableToken {
             endVoteBlock = currentVoteBlock.add(votingBlockWindowSize);
             uint256 effectiveTotalValue = 0;
 
-            // FEE VOTING 
-            if(votingActive["Fee"]) {
-                if(votes["Fee"].num/totalSupply >= voteEffectiveThreshold/100) {
-                    effectiveTotalValue = votes["Fee"].totalValue.add(fee.mul(totalSupply.sub(votes["Fee"].num))).mul(1000);
-                    fee = effectiveTotalValue.div(totalSupply);
-                }
-                votingActive["Fee"] = false;
-            } else {
-                if(voteCalls["Fee"]/totalSupply >= callToVoteThreshold/100) {
-                    votes["Fee"] = VoteCounter(0, 0);
-                    votingActive["Fee"] = true;
-                }
-            }
-
             // STAKE VOTING
             if(votingActive["Stake"]) {
                 if(votes["Stake"].num/totalSupply >= voteEffectiveThreshold/100) {
@@ -254,7 +219,6 @@ contract OnyxToken is ERC20, MintableToken {
                 }
             }
 
-            voteCalls["Fee"] = 0;
             voteCalls["Stake"] = 0;
             return true;
         } else {

@@ -12,7 +12,7 @@ contract ValidatorNetwork is Ownable {
     using SafeMath for uint256;
 
     OnyxToken Onyx;
-    uint256 stake;
+    uint256 public stake;
 
     struct Validator {
         bool init;
@@ -24,7 +24,7 @@ contract ValidatorNetwork is Ownable {
 
     function ValidatorNetwork(address _onyx) {
         Onyx = OnyxToken(_onyx);
-        stake = Onyx.getStake();
+        stake = Onyx.stake();
     }
 
     modifier isApproved() {
@@ -37,12 +37,8 @@ contract ValidatorNetwork is Ownable {
         _;
     }
 
-    function getStake() constant returns (uint256) {
-        return stake;
-    }
-
     function updateStake() returns (bool) {
-        stake = Onyx.getStake();
+        stake = Onyx.stake();
     }
 
     function newValidator() isApproved returns (bool) {
