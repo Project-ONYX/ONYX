@@ -79,7 +79,7 @@ class Marketplace extends Component {
 		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Onyx.deployed().then((instance) => {
 				onyx = instance
-				onyx.getStake.call().then((_stake) => {
+				onyx.stake.call().then((_stake) => {
 					stake = _stake
 					onyx.approve(event, stake.toNumber(), {from: accounts[0]}).then(() => {
 						this.state.REContract.at(event).then((instance) => {

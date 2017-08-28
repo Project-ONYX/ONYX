@@ -1,5 +1,7 @@
 require('babel-register')
 require('babel-polyfill')
+process.env.NODE_ENV = 'production';
+
 
 module.exports = {
   migrations_directory: "./migrations",

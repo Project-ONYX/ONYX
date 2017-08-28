@@ -82,7 +82,7 @@ class Pending extends Component {
 		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Onyx.deployed().then((instance) => {
 				onyx = instance
-				onyx.getStake.call().then((_stake) => {
+				onyx.stake.call().then((_stake) => {
 					stake = _stake
 					console.log(accounts[0])
 					onyx.approve(address, stake.toNumber(), {from: accounts[0]}).then(() => {
