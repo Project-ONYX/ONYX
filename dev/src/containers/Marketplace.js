@@ -71,7 +71,9 @@ class Marketplace extends Component {
 	    this.getEvents()
   	}
 
-  	handleClaim(event) {
+  	handleClaim(address, event) {
+  		event.preventDefault();
+
 		var reContract
 		var onyx
 		var stake
@@ -81,11 +83,11 @@ class Marketplace extends Component {
 				onyx = instance
 				onyx.stake.call().then((_stake) => {
 					stake = _stake
-					onyx.approve(event, stake.toNumber(), {from: accounts[0]}).then(() => {
-						this.state.REContract.at(event).then((instance) => {
+					onyx.approve(address, stake.toNumber(), {from: accounts[0]}).then(() => {
+						this.state.REContract.at(address).then((instance) => {
 							reContract = instance
 							reContract.claim({from: accounts[0]}).then(() => {
-								console.log("Claimed " + event)
+								console.log("Claimed " + address)
 							})
 						})
 					})
@@ -107,7 +109,7 @@ class Marketplace extends Component {
 	  						log.args._contract, 
 	  						log.args._req, 
 	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-	  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
+	  						<button className="button pure-button" onClick={(e) => this.handleClaim(log.args._contract, e)}>Claim</button>
 	  					]
 	  				})
 	  				let claimEvent = instance.Claimed({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})

@@ -4,12 +4,16 @@ import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.j
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import { Switch, Route } from 'react-router-dom'
+import axios from 'axios'
+
 import Pending from './Pending'
 import Deployed from './Deployed'
 
 class Requester extends Component {
 	constructor(props) {
 		super(props)
+
+		console.log(props)
 
 		this.state = {
 			account: "",
@@ -40,6 +44,27 @@ class Requester extends Component {
 	    })
   	}
 
+  	componentDidMount() {
+  		var inputs = document.querySelectorAll( '.fileUpload' );
+		Array.prototype.forEach.call( inputs, function( input )
+		{
+			var label	 = input.nextElementSibling,
+				labelVal = label.innerHTML;
+
+			input.addEventListener( 'change', function( e )
+			{
+				var fileName = '';
+				fileName = e.target.value.split( '\\' ).pop();
+				if(fileName.length > 15) {
+					fileName = fileName.substring(0,12) + "...";
+				}
+				if( fileName )
+					labelVal = fileName;
+				label.innerHTML = labelVal;
+			});
+		});
+  	}
+
   	instantiateContract() {
 	    const contract = require('truffle-contract')
 	    const Factory = contract(ReqEngContractFactory)
@@ -61,18 +86,34 @@ class Requester extends Component {
 	handleSubmit(event) {
 		event.preventDefault()
 
-		// Declaring this for later so we can chain functions on OnyxToken.
-		var factory
+		var fileSelect = document.getElementById('file')
+		if(fileSelect.files.length === 0) {
+			return;
+		}
+		let file = fileSelect.files[0]
+		console.log(file)
 
-		// Get accounts.
-		this.state.web3.eth.getAccounts((error, accounts) => {
-		  this.state.Factory.deployed().then((instance) => {
-		    factory = instance
-		    // Get the value from the contract to prove it worked.
-		    return factory.newContract(this.state.value, {from: accounts[0]})
-		  }).then(() => {
-		  	this.setState({value: ""})
-		  })
+		var formData = new FormData()
+		formData.append('file', file, file.name)
+
+		axios.post('/api/files', formData).then((resp) => {
+			let id = resp.data.Id;
+
+			// Declaring this for later so we can chain functions on OnyxToken.
+			var factory
+
+			// Get accounts.
+			this.state.web3.eth.getAccounts((error, accounts) => {
+			  this.state.Factory.deployed().then((instance) => {
+			    factory = instance
+			    // Get the value from the contract to prove it worked.
+			    return factory.newContract(this.state.value, id, {from: accounts[0]})
+			  }).then(() => {
+			  	this.setState({value: ""})
+			  })
+			})
+		}).catch(function(err) {
+			console.log(err);
 		})
 	}
 
@@ -86,6 +127,7 @@ class Requester extends Component {
 	        	<div className="container requester-container">
 					<h1>Requester</h1>
 					<form className="pure-form pure-form-stacked requester-form" onSubmit={this.handleSubmit}>
+					    <input className="requester-form-entry fileUpload" name='file' type="file" id="file" placeholder="Upload File" /><label htmlFor="file">Choose a file</label>
 					    <input className="requester-form-entry" value={this.state.value} onChange={this.handleChange} id="deadline" placeholder="Deadline" />
 					    <button className="button-xlarge pure-button requester-button">Request Task</button>
 					</form>

@@ -84,7 +84,6 @@ class Pending extends Component {
 				onyx = instance
 				onyx.stake.call().then((_stake) => {
 					stake = _stake
-					console.log(accounts[0])
 					onyx.approve(address, stake.toNumber(), {from: accounts[0]}).then(() => {
 						this.state.REContract.at(address).then((instance) => {
 							reContract = instance
@@ -138,7 +137,6 @@ class Pending extends Component {
 						table = table.filter(function(entry) {
 							return !(entry[1] in deployTable)
 						})
-						console.log(deployTable)
 		  				this.setState({ tableData: table })
 	  				})
 	  			})

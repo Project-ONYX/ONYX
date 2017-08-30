@@ -27,7 +27,7 @@ contract ReqEngContract is Ownable {
     uint256 public stake;
     uint256 public fee;
 
-    string dataHash;
+    string public dataHash;
 
     bool active;
     bool claimed;

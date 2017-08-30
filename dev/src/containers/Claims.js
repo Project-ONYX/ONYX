@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
@@ -50,6 +51,33 @@ class Claims extends Component {
 	    this.getEvents()
   	}
 
+	handleDownload(address, event) {
+		event.preventDefault()
+
+		var reContract
+
+		this.state.REContract.at(address).then((instance) => {
+			reContract = instance
+			reContract.dataHash.call().then((id) => {
+				console.log("ID: " + id);
+				setTimeout(() => {
+					const response = {
+						file: 'http://localhost:3001/api/files/' + id
+					}
+					window.location.href = response.file;
+				}, 100);
+				// axios.get('/api/files/' + id).then(function (response) {
+				//     console.log("Download Successful!");
+				//     console.log(response);
+				// 	FileDownload(response.data, id + ".zip", "application/zip");
+				// })
+				// .catch(function (error) {
+				//    	console.log(error);
+				// });
+			})
+		})
+	}
+
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
@@ -62,7 +90,8 @@ class Claims extends Component {
 	  						i, 
 	  						log.args._contract, 
 	  						log.args._req, 
-	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether")
+	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"),
+	  						<button className="button pure-button" onClick={(e) => this.handleDownload(log.args._contract, e)}>Download</button>
 	  					]
 	  				})
 	  				this.setState({ tableData: table })
@@ -72,7 +101,7 @@ class Claims extends Component {
   	}
 
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value (ETH)"]
+		var headers = ["#", "Contract", "Requester", "Value (ETH)", "Link"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
