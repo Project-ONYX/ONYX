@@ -11,7 +11,7 @@ import './ReqEngContract.sol';
 contract ValidatorNetwork is Ownable {
     using SafeMath for uint256;
 
-    OnyxToken Onyx;
+    OnyxToken public Onyx;
     uint256 public stake;
 
     struct Validator {
@@ -21,6 +21,12 @@ contract ValidatorNetwork is Ownable {
     }
 
     mapping(address => Validator) validators;
+    mapping(uint256 => address) valList;
+
+    event NewValidator(address indexed _val);
+    event DeleteValidator(address indexed _val);
+    event Validate(address indexed _val, address _job);
+    event Validated(address indexed _val, address _job);
 
     function ValidatorNetwork(address _onyx) {
         Onyx = OnyxToken(_onyx);
@@ -45,6 +51,7 @@ contract ValidatorNetwork is Ownable {
         if(validators[msg.sender].init == false) {
             Onyx.transferFrom(msg.sender, this, stake);
             validators[msg.sender] = Validator(true, stake, 0);
+            NewValidator(msg.sender);
             return true;
         } else {
             return false;
@@ -52,9 +59,15 @@ contract ValidatorNetwork is Ownable {
     }
 
     function deleteValidator() returns (bool) {
-        Onyx.transfer(msg.sender, stake);
-        validators[msg.sender].init = false;
-        return true;
+        if(validators[msg.sender].init == true) {
+            Onyx.transfer(msg.sender, stake);
+            validators[msg.sender].init = false;
+            DeleteValidator(msg.sender);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     function amValidator(address _addr) constant returns (bool) {
@@ -67,17 +80,20 @@ contract ValidatorNetwork is Ownable {
 
     function getRandomValidator() constant returns (address) {
         // TODO
+        return 0;
     }
 
     function validate() returns (address) {
         address randomValidatorAddress = getRandomValidator();
         Validator randomValidator = validators[randomValidatorAddress];
         randomValidator.currentAssignment = msg.sender;
+        Validate(randomValidatorAddress, msg.sender);
         return randomValidatorAddress;
     }
 
     function endValidation(bool _passed) returns (bool) {
         ReqEngContract regContract = ReqEngContract(validators[msg.sender].currentAssignment);
+        Validated(msg.sender, validators[msg.sender].currentAssignment);
         validators[msg.sender].currentAssignment = 0;
         regContract.feedback(_passed, msg.sender);
         return true;
