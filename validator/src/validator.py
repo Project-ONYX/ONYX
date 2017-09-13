@@ -2,6 +2,8 @@ import sys
 import os
 import unittest
 
+# Helper Class that has the job of running all the tests for the
+# ValidatorListener class
 class Validator:
     def __init__(self, test_path):
         self.path = test_path
@@ -11,11 +13,11 @@ class Validator:
         sys.path.append(self.path)
         from tests import getTests
         test_suite = getTests()
-        result_key = self.runTests(test_suite)
+        result_key = self.run_tests(test_suite)
         return result_key
 
     # Runs all the unit tests for a job
-    def runTests(self, test_suite):
+    def run_tests(self, test_suite):
         result = unittest.TextTestRunner(verbosity=0,stream = open(os.devnull, 'w')).run(test_suite)
         result_key = ""
         if(result.wasSuccessful()):
