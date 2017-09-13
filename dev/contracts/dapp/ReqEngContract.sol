@@ -99,10 +99,12 @@ contract ReqEngContract is Ownable {
 
     function submit() returns (bool) {
     	// TODO: Send the code to the validate function
+        require(claimed && active && msg.sender == Engineer);
         if(validating == false) {
             validating = true;
             Validators.validate();
         }
+        return validating;
     }
 
     function callDeadline() onlyOwner returns (bool) {
@@ -116,6 +118,7 @@ contract ReqEngContract is Ownable {
         Deadline(Requester, this.balance);
         Factory.deadlineContract();
         selfdestruct(Requester);
+        return true;
     }
 
     function feedback(bool _passed, address _validator) returns (bool) {

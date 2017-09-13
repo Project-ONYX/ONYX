@@ -19,7 +19,7 @@ class Validator:
         result = unittest.TextTestRunner(verbosity=0,stream = open(os.devnull, 'w')).run(test_suite)
         result_key = ""
         if(result.wasSuccessful()):
-            f = open(self.path + "\\secret_key","r")
+            f = open(self.path + "secret_key","r")
             result_key = f.read()
             f.close()
         else:

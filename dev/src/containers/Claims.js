@@ -66,14 +66,18 @@ class Claims extends Component {
 					}
 					window.location.href = response.file;
 				}, 100);
-				// axios.get('/api/files/' + id).then(function (response) {
-				//     console.log("Download Successful!");
-				//     console.log(response);
-				// 	FileDownload(response.data, id + ".zip", "application/zip");
-				// })
-				// .catch(function (error) {
-				//    	console.log(error);
-				// });
+			})
+		})
+	}
+
+	handleValidate(address, event) {
+		event.preventDefault()
+
+		var reContract
+		this.state.web3.eth.getAccounts((error, accounts) => {
+			this.state.REContract.at(address).then((instance) => {
+				reContract = instance
+				reContract.submit({from: accounts[0]})
 			})
 		})
 	}
@@ -91,7 +95,8 @@ class Claims extends Component {
 	  						log.args._contract, 
 	  						log.args._req, 
 	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"),
-	  						<button className="button pure-button" onClick={(e) => this.handleDownload(log.args._contract, e)}>Download</button>
+	  						<button className="button pure-button" onClick={(e) => this.handleDownload(log.args._contract, e)}>Download</button>,
+	  						<button className="button pure-button" onClick={(e) => this.handleValidate(log.args._contract, e)}>Validate</button>
 	  					]
 	  				})
 	  				this.setState({ tableData: table })
@@ -101,7 +106,7 @@ class Claims extends Component {
   	}
 
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value (ETH)", "Link"]
+		var headers = ["#", "Contract", "Requester", "Value (ETH)", "Download", "Validate"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData

@@ -18,11 +18,15 @@ contract ValidatorNetwork is Ownable {
         bool init;
         uint256 stake;
         address currentAssignment;
+        uint256 index;
     }
 
     mapping(address => Validator) validators;
     mapping(uint256 => address) valList;
 
+    uint256 maxIndex = 0;
+
+    event RandNum(uint256 _val);
     event NewValidator(address indexed _val);
     event DeleteValidator(address indexed _val);
     event Validate(address indexed _val, address _job);
@@ -50,7 +54,9 @@ contract ValidatorNetwork is Ownable {
     function newValidator() isApproved returns (bool) {
         if(validators[msg.sender].init == false) {
             Onyx.transferFrom(msg.sender, this, stake);
-            validators[msg.sender] = Validator(true, stake, 0);
+            validators[msg.sender] = Validator(true, stake, 0, maxIndex);
+            valList[maxIndex] = msg.sender;
+            maxIndex = maxIndex.add(1);
             NewValidator(msg.sender);
             return true;
         } else {
@@ -61,7 +67,17 @@ contract ValidatorNetwork is Ownable {
     function deleteValidator() returns (bool) {
         if(validators[msg.sender].init == true) {
             Onyx.transfer(msg.sender, stake);
-            validators[msg.sender].init = false;
+            uint256 idx = validators[msg.sender].index;
+            if(maxIndex > 1) {
+                address temp = valList[maxIndex-1];
+                valList[idx] = temp;
+                validators[temp].index = idx;
+                maxIndex = maxIndex.sub(1);
+            } else {
+                delete valList[idx];
+                maxIndex = 0;
+            }
+            delete validators[msg.sender];
             DeleteValidator(msg.sender);
             return true;
         }
@@ -79,8 +95,9 @@ contract ValidatorNetwork is Ownable {
     }
 
     function getRandomValidator() constant returns (address) {
-        // TODO
-        return 0;
+        uint256 randNum = uint256(sha3(block.timestamp))%maxIndex;
+        RandNum(randNum);
+        return valList[randNum];
     }
 
     function validate() returns (address) {
