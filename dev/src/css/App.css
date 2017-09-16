@@ -19,7 +19,9 @@ code {
 .container {
   box-sizing: border-box;
   width: 100%;
+  min-height: 100vh;
   padding: 45px 20px;
+  background: #EDEDED;
 }
 
 .pure-button-primary {
@@ -86,10 +88,6 @@ code {
   float: right;
 }
 
-.App {
-  padding-bottom: 10%;
-}
-
 .content {
   padding-top: 2em;
 }
@@ -126,9 +124,13 @@ code {
   width: 100%;
 }
 
+.icon {
+  text-align: center;
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
 .requester-container {
-  height: 60vh;
-  background-color: #2D2D2D;
   text-align: center;
 }
 
@@ -137,10 +139,15 @@ code {
   font-size: 3em;
 }
 
+.requester-form {
+  text-align: center;
+}
+
 .requester-form-entry {
   text-align: center !important;
   margin: 0 auto !important;
   margin-bottom: 1em !important;
+  width: 250px;
   color: black;
 }
 
@@ -157,17 +164,34 @@ code {
 
 .requester-button {
   font-size: 150%;
+  position: absolute;
+  width: 300px;
+  height: 60px;
+  margin-left: -150px;
+  bottom: 10px;
+  background-color: #38bf7b;
 }
 
 .requester-table {
   margin: 0 auto;
-  margin-top: 2em;
-  width: 80%;
+  margin-top: 1em;
+  width: 90%;
+  height: 25em;
+  overflow: hidden;
+  table-layout: fixed;
+  /*display: table;*/
+  text-align: left;
+  border: 1px solid #cbcbcb;
+}
+
+.scrollable-rows {
+  overflow-y:scroll;
+  height: 22em;
+  table-layout: fixed;
+  margin-right: -5px;
 }
 
 .engineer-container {
-  height: 60vh;
-  background-color: #2D2D2D;
   text-align: center;
 }
 
@@ -262,18 +286,185 @@ code {
 }
 
 .fileUpload + label {
-    font-size: 1.25em;
     font-weight: 700;
     color: white;
     background-color: #BA3F3F;
-    display: inline-block;
     cursor: pointer; /* "hand" cursor */
-    padding: 5px 10px 5px 10px;
-    width: 10em;
-    margin-bottom: 10px;
+    padding: 0.5em 0 0.6em 0;
+    width: 250px;
+    margin: 15px auto 15px auto;
 }
 
 .fileUpload:focus + label,
 .fileUpload + label:hover {
     background-color: red;
+}
+
+.tile {
+  width: 200px;
+  height: 200px;
+  background: black;
+  opacity: 0.7;
+  margin: 0 auto;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-radius: 10px;
+}
+
+.tile-title {
+  padding-top: 25px;
+  font-size: 2em;
+}
+
+.tile-body {
+  padding-top: 60px;
+  font-size: 8em;
+}
+
+.new-req-button {
+  background: #37BF7B;
+  font-size: 1.1em;
+  width: 90%;
+}
+
+.search-box {
+  font-size: 1em;
+  padding: 5px 5px 10px 5px;
+  width: 85%;
+}
+
+.search-button {
+  background: #37BF7B;
+  margin-top: 10px;
+  width: 90%;
+}
+
+.search-zone {
+  margin: 1em 0 1em 0;
+}
+
+.button-zone {
+  margin: 1em 0 1em 0;
+  text-align: center;
+}
+
+@media (min-width: 48em) {
+  .button-zone {
+    text-align: right;
+  }
+
+  .search-zone {
+    text-align: center;
+  }
+
+  .search-box {
+      width: 80%;
+  }
+
+  .search-button {
+    width: auto;
+    margin-left: 10px;
+    margin-top: 0px;
+  }
+
+  .new-req-button {
+    width: auto;
+  }
+
+  .requester-table {
+    margin: 0 auto;
+    margin-top: 1em;
+    width: 90%;
+    height: 50em;
+    overflow: hidden;
+    table-layout: fixed;
+    /*display: table;*/
+    text-align: left;
+    border: 1px solid #cbcbcb;
+  }
+
+  .scrollable-rows {
+    overflow-y:scroll;
+    height: 46.5em;
+    table-layout: fixed;
+    margin-right: -15px;
+  }
+
+  .right-arrow:after {
+    content: '\25B8'; /* Unicode character for "plus" sign (+) */
+    font-size: 1.5em;
+    color: #777;
+    float: right;
+    position: relative;
+    right: -0.3em;
+    top: -17em;
+    margin-right: 0;
+  }
+}
+
+.nopadding {
+  padding: 0 !important;
+}
+
+.tableHeaders {
+  background-color: #191818;
+  color: #eeeeee;
+  padding: 15px;
+}
+
+.detailedRow {
+  border-bottom: 1px solid #cbcbcb;
+}
+
+.detailedColumn {
+  display: inline-block;
+}
+
+.detailedColumnRight {
+  display: inline-block;
+  float: right;
+  margin-right: 10px;
+}
+
+.accordian {
+  background-color: #grey;
+  color: #444;
+  cursor: pointer;
+  padding: 15px;
+  text-align: left;
+  border: none;
+  border-width: 0px;
+  outline: none;
+  transition: 0.4s;
+}
+
+.accordian.active, .accordian:hover {
+    background-color: #ddd;
+}
+
+div.accordian-panel {
+    padding: 15px;
+    background-color: white;
+    display: none;
+}
+
+.accordian-panel p {
+  padding: 3px 0 3px 0;
+  margin: 0;
+}
+
+.show {
+  display: inline-block !important;
+}
+
+.accordian:before {
+    content: '\02795'; /* Unicode character for "plus" sign (+) */
+    font-size: 13px;
+    color: #777;
+    float: left;
+    margin-right: 10px;
+}
+
+.accordian.active:before {
+    content: "\2796"; /* Unicode character for "minus" sign (-) */
 }

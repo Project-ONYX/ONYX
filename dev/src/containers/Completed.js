@@ -6,7 +6,7 @@ import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import DetailedTable from '../components/DetailedTable'
 import getWeb3 from '../utils/getWeb3'
 
-class Claims extends Component {
+class Completed extends Component {
 	constructor(props) {
 		super(props)
 
@@ -53,12 +53,6 @@ class Claims extends Component {
 	    this.state.web3.eth.getAccounts((error, accounts) => {
 		    this.state.Factory.deployed().then((instance) => {
 		    	factory = instance
-				var claim = factory.Claimed({_eng: accounts[0]}, {fromBlock: "latest"})
-				claim.watch((error, result) => {
-					if (error == null) {
-				  		this.getEvents()
-					}
-				})
 				var val = factory.Validated({_eng: accounts[0]}, {fromBlock: "latest"})
 				val.watch((error, result) => {
 					if (error == null) {
@@ -67,6 +61,7 @@ class Claims extends Component {
 				})
 		    })
 		})
+
 	    this.getEvents()
   	}
 
@@ -104,65 +99,44 @@ class Claims extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Claimed({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
-	  			event.get((error, logs) => {
-	  				logs.reverse()
-	  				var table = logs.map(log => {
-	  					return [
-	  						log.args._contract, 
-	  						log.args._name,
-	  						log.args._deadline.toNumber(),
-	  						log.args._req, 
-	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"),
-	  						<button className="button pure-button" onClick={(e) => this.handleDownload(log.args._contract, e)}>Download</button>,
-	  						<button className="button pure-button" onClick={(e) => this.handleValidate(log.args._contract, e)}>Validate</button>
-	  					]
-	  				})
-
-				    let valEvent = instance.Validated({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
-				    valEvent.get((error, logs) => {
-	  					var valTable = logs.map(log => {
-	  						return [
-	  							log.args._contract,
-	  							log.args._name,
-	  						]
-	  					})
-	  					valTable = valTable.reduce((result, filter) => {
-	  						result[filter[0]] = filter;
-	  						return result;
-	  					},{})
-	  					table = table.filter(entry => {
-	  						if(entry[0] in valTable) {
-	  							return false
-	  						}
-	  						return true
-	  					})
-	  					table = table.map(log => {
-	  						log[0] = log[0].slice(0,20) + "..."
-	  						log[3] = log[3].slice(0,20) + "..."
-	  						log[1] = this.state.web3.toAscii(log[1].replace(/0+$/g, ""))
-	  						if(log[1].length > 23) {
-	  							log[1] = log[1].slice(0,20) + "..."
-	  						}
-	  						var output_map = {"headers":[log[1], log[4] + " ETH"], "vals":[
-	  							{"contract": log[0]},
-	  							{"requester": log[3]},
-	  							{"deadline": "Block " + log[2]},
-	  							{"value": log[4] + " ETH"},
-	  							{"Download": log[5]},
-	  							{"Validate": log[6]}
-	  						]}
-	  						return output_map
-	  					})
-						this.setState({ tableData: table })
-				    })
-	  			})
+				let event = instance.Validated({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+			    event.get((error, logs) => {
+			    	logs.reverse()
+  					var table = logs.map(log => {
+  						return [
+  							log.args._contract,
+  							log.args._name,
+  							log.args._req,
+  							log.args._val,
+  							log.args._deadline.toNumber(),
+  							this.state.web3.fromWei(log.args.value.toNumber(), "ether")
+  						]
+  					})
+  					table = table.map(log => {
+  						log[0] = log[0].slice(0,20) + "..."
+  						log[2] = log[2].slice(0,20) + "..."
+  						log[3] = log[3].slice(0,20) + "..."
+  						log[1] = this.state.web3.toAscii(log[1].replace(/0+$/g, ""))
+  						if(log[1].length > 23) {
+  							log[1] = log[1].slice(0,20) + "..."
+  						}
+  						var output_map = {"headers":[log[1], log[5] + " ETH"], "vals":[
+  							{"contract": log[0]},
+  							{"requester": log[2]},
+  							{"validator": log[3]},
+  							{"deadline": "Block " + log[4]},
+  							{"value": log[5] + " ETH"}
+  						]}
+  						return output_map
+  					})
+					this.setState({ tableData: table })
+			    })
 	  		})
   		})
   	}
 
 	render() {
-		var headers = ["Claimed"]
+		var headers = ["Completed"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
@@ -173,4 +147,4 @@ class Claims extends Component {
 	}
 }
 
-export default Claims
+export default Completed

@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import Header from '../components/Header'
 
 class Transfer extends Component {
 	constructor(props) {
@@ -43,17 +44,22 @@ class Transfer extends Component {
 
 	render() {
 		return (
-	        <main className="container transfer-container">
-	          <div className="pure-g">
-	            <div className="pure-u-1-1">
-	              <h1>Transfer</h1>
-	              	<form className="pure-form pure-form-stacked transfer-form" onSubmit={this.handleSubmit}>
-				        <input className="transfer-form-entry" value={this.state.address} onChange={this.handleAddressChange} id="address" placeholder="Address" />
-				        <input className="transfer-form-entry" value={this.state.amount} onChange={this.handleAmountChange} id="amount" placeholder="Amount" />
-				        <button className="button-xlarge pure-button transfer-button">Transfer ONYX</button>
-					</form>
-	            </div>
-	          </div>
+	        <main>
+	          <Header
+	          	text="> Transfer"
+	          />
+	          <div className="container transfer-container">
+		          <div className="pure-g">
+		            <div className="pure-u-1-1">
+		              <h1>Transfer</h1>
+		              	<form className="pure-form pure-form-stacked transfer-form" onSubmit={this.handleSubmit}>
+					        <input className="transfer-form-entry" value={this.state.address} onChange={this.handleAddressChange} id="address" placeholder="Address" />
+					        <input className="transfer-form-entry" value={this.state.amount} onChange={this.handleAmountChange} id="amount" placeholder="Amount" />
+					        <button className="button-xlarge pure-button transfer-button">Transfer ONYX</button>
+						</form>
+		            </div>
+		          </div>
+		      </div>
 	        </main>
 		)
 	}

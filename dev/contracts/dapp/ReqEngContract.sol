@@ -23,6 +23,7 @@ contract ReqEngContract is Ownable {
     ValidatorNetwork Validators;
     ReqEngContractFactory Factory;
 
+    bytes32 public name;
     uint256 public deadline;
     uint256 public stake;
     uint256 public fee;
@@ -38,13 +39,14 @@ contract ReqEngContract is Ownable {
     event Validated(address indexed _req, address indexed _eng, address indexed _val, uint256 value);
     event Deadline(address indexed _req, uint256 value);
 
-    function ReqEngContract(address _req, address _onyx, address _validators, address _factory, uint256 _deadline, string _dataHash) {
+    function ReqEngContract(address _req, address _onyx, address _validators, address _factory, bytes32 _name, uint256 _deadline, string _dataHash) {
     	Requester = _req;
     	Onyx = OnyxToken(_onyx);
     	Validators = ValidatorNetwork(_validators);
         Factory = ReqEngContractFactory(_factory);
 	   	stake = Onyx.stake();
 	   	fee = Onyx.fee();
+        name = _name;
         dataHash = _dataHash;
     	active = false;
     	claimed = false;

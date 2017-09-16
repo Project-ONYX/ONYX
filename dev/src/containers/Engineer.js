@@ -3,9 +3,9 @@ import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import getWeb3 from '../utils/getWeb3'
-import { Switch, Route } from 'react-router-dom'
-import Marketplace from './Marketplace'
+import Header from '../components/Header'
 import Claims from './Claims'
+import Completed from './Completed'
 
 class Engineer extends Component {
 	constructor(props) {
@@ -15,7 +15,8 @@ class Engineer extends Component {
 			web3: "",
 			Onyx: "",
 			Factory: "",
-			REContract: ""
+			REContract: "",
+			tableData: []
 		}
 	}
 
@@ -49,21 +50,24 @@ class Engineer extends Component {
   	}
 
 	render() {
-		return (
-	        <main>
+		return(
+			<main>
+	        	<Header 
+	        		text="> My Profile"
+	        	/>
 	        	<div className="container engineer-container">
-					<h1>Engineer</h1>
+		        	<div className="button-zone">
+				    	<a href="/Marketplace"><button className="pure-button new-req-button">Marketplace</button></a>
+				    </div>
+		        	<div className="pure-g">
+					    <div className="pure-u-1 pure-u-md-1-2 right-arrow">
+					        <Claims/>
+					    </div>
+					    <div className="pure-u-1 pure-u-md-1-2">
+					        <Completed/>
+					    </div>
+					</div>
 				</div>
-				<div className="pure-menu pure-menu-horizontal sub-menu">
-				    <ul className="pure-menu-list">
-				        <li className="pure-menu-item"><a href="/Engineer/Marketplace" className="pure-menu-link">Marketplace</a></li>
-				        <li className="pure-menu-item"><a href="/Engineer/Claims" className="pure-menu-link">Current Claims</a></li>
-				    </ul>
-				</div>
-				<Switch>
-		          	<Route path='/Engineer/Marketplace' render={() => <Marketplace />} />
-		          	<Route path='/Engineer/Claims' render={() => <Claims />} />
-		        </Switch>
 	        </main>
 		)
 	}

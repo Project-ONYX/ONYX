@@ -7,9 +7,12 @@ import '../css/open-sans.css'
 import '../css/pure-min.css'
 import '../lib/font-awesome/css/font-awesome.min.css'
 import '../css/App.css'
+import '../css/side-bar.css'
+import '../css/style.css'
 
-import Header from '../components/Header'
+import SideBar from '../components/SideBar'
 import Main from './Main'
+import Toaster from '../components/Toaster'
 
 class App extends Component {
   constructor(props) {
@@ -94,8 +97,12 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <Header 
+      <div id="App" className="App">
+        <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.min.css"/>
+        <Toaster />
+        <SideBar 
           account={this.state.account}
           balance={this.state.balance}
         />

@@ -5,7 +5,7 @@ import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import DetailedTable from '../components/DetailedTable'
 import getWeb3 from '../utils/getWeb3'
 
-class Deployed extends Component {
+class InProgress extends Component {
 	constructor(props) {
 		super(props)
 
@@ -47,7 +47,7 @@ class Deployed extends Component {
 	    this.setState({ Onyx: Onyx })
 	    this.setState({ Factory: Factory })
 	    this.setState({ REContract: REContract })
-
+		
 	    var factory
 		this.state.web3.eth.getAccounts((error, accounts) => {
 		    this.state.Factory.deployed().then((instance) => {
@@ -58,8 +58,8 @@ class Deployed extends Component {
 				  		this.getEvents()
 					}
 				})
-				var deploy = factory.Deployed({_req: accounts[0]}, {fromBlock: "latest"})
-				deploy.watch((error, result) => {
+				var val = factory.Validated({_req: accounts[0]}, {fromBlock: "latest"})
+				val.watch((error, result) => {
 					if (error == null) {
 				  		this.getEvents()
 					}
@@ -72,44 +72,46 @@ class Deployed extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Deployed({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+	 			let event = instance.Claimed({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map(log => {
 	  					return [
 	  						log.args._contract,
-	  						log.args._name,
-	  						log.args._deadline.toNumber(),
-	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether")
+	  						log.args._name, 
+	  						log.args._deadline, 
+	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
+	  						log.args._eng
 	  					]
 	  				})
-	  				
-	  				let claimEvent = instance.Claimed({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
-	  				claimEvent.get((error, logs) => {
-	  					var claimTable = logs.map(log => {
+	  				let validateEvent = instance.Validated({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+	  				validateEvent.get((error, logs) => {
+	  					var validatedTable = logs.map(log => {
 	  						return [
 	  							log.args._contract,
-	  							log.args._eng
+	  							log.args._req,
+	  							log.args._eng,
+	  							log.args._val
 	  						]
 	  					})
-	  					claimTable = claimTable.reduce((result, filter) => {
+	  					validatedTable = validatedTable.reduce((result, filter) => {
 	  						result[filter[0]] = filter;
 	  						return result;
 	  					},{})
 	  					table = table.filter(entry => {
-	  						if(entry[0] in claimTable) {
+	  						if(entry[0] in validatedTable) {
 	  							return false
 	  						}
 	  						return true
 	  					})
 	  					table = table.map(log => {
-	  						log[0] = log[0].slice(0,20) + "..."
 	  						log[1] = this.state.web3.toAscii(log[1].replace(/0+$/g, ""))
 	  						if(log[1].length > 23) {
 	  							log[1] = log[1].slice(0,20) + "..."
 	  						}
-	  						var output_map = {"headers":[log[1], log[3] + " ETH"], "vals":[
-	  							{"contract": log[0]},
+	  						var output_map = {"headers":[log[1], log[5] + " ETH"], "vals":[
+	  							{"contract": log[0].slice(0,20) + "..."},
+	  							{"engineer": log[4].slice(0,20) + "..."},
 	  							{"deadline": "Block " + log[2]},
 	  							{"value": log[3] + " ETH"}
 	  						]}
@@ -123,7 +125,7 @@ class Deployed extends Component {
   	}
 
 	render() {
-		var headers = ["Deployed"]
+		var headers = ["In Progress"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
@@ -134,4 +136,4 @@ class Deployed extends Component {
 	}
 }
 
-export default Deployed
+export default InProgress

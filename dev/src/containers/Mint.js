@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import Header from '../components/Header'
 
 class Mint extends Component {
 	constructor(props) {
@@ -36,16 +37,21 @@ class Mint extends Component {
 
 	render() {
 		return (
-	        <main className="container mint-container">
-	          <div className="pure-g">
-	            <div className="pure-u-1-1">
-	              <h1>Mint</h1>
-	              	<form className="pure-form pure-form-stacked mint-form" onSubmit={this.handleSubmit}>
-				        <input className="mint-form-entry" value={this.state.value} onChange={this.handleChange} id="amount" placeholder="Amount" />
-				        <button className="button-xlarge pure-button mint-button">Mint ONYX</button>
-					</form>
-	            </div>
-	          </div>
+	        <main>
+	          <Header 
+	        	text="> Mint"
+	          />
+	          <div  className="container mint-container">
+		          <div className="pure-g">
+		            <div className="pure-u-1-1">
+		              <h1>Mint</h1>
+		              	<form className="pure-form pure-form-stacked mint-form" onSubmit={this.handleSubmit}>
+					        <input className="mint-form-entry" value={this.state.value} onChange={this.handleChange} id="amount" placeholder="Amount" />
+					        <button className="button-xlarge pure-button mint-button">Mint ONYX</button>
+						</form>
+		            </div>
+		          </div>
+		       </div>
 	        </main>
 		)
 	}

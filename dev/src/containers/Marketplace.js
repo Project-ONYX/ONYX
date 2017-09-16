@@ -2,8 +2,9 @@ import React, { Component } from 'react'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
-import Table from '../components/Table'
 import getWeb3 from '../utils/getWeb3'
+import Header from '../components/Header'
+import DetailedTable from '../components/DetailedTable'
 
 class Marketplace extends Component {
 	constructor(props) {
@@ -14,11 +15,14 @@ class Marketplace extends Component {
 			Onyx: "",
 			Factory: "",
 			REContract: "",
+			searchValue: "",
 			tableData: []
 		}
 
 		this.getEvents = this.getEvents.bind(this)
 		this.handleClaim = this.handleClaim.bind(this)
+		this.searchChange = this.searchChange.bind(this)
+		this.handleSubmit = this.handleSubmit.bind(this)
 	}
 
   	componentWillMount() {
@@ -68,7 +72,7 @@ class Marketplace extends Component {
 		    })
 		})
 
-	    this.getEvents()
+	    this.getEvents("")
   	}
 
   	handleClaim(address, event) {
@@ -96,41 +100,61 @@ class Marketplace extends Component {
 		})
   	}
 
-  	getEvents() {
+  	getEvents(filterTerm) {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 	  		this.state.Factory.deployed().then((instance) => {
 	 			let event = instance.Deployed({}, {fromBlock: 0, toBlock: 'latest'})
 	  			event.get((error, logs) => {
-	  				var i = 0
-	  				var table = logs.map(log => {
-	  					i++
+	  				logs.reverse()
+	  				var table = logs.map((log, index) => {
 	  					return [
-	  						i, 
-	  						log.args._contract, 
+	  						log.args._contract,
+	  						this.state.web3.toAscii(log.args._name.replace(/0+$/g, "")),
 	  						log.args._req, 
 	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
+	  						log.args._deadline.toNumber(),
 	  						<button className="button pure-button" onClick={(e) => this.handleClaim(log.args._contract, e)}>Claim</button>
 	  					]
 	  				})
 	  				let claimEvent = instance.Claimed({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
 		  			claimEvent.get((error, logs) => {
-		  				var j = 0
 		  				var claimTable = logs.map(log => {
-		  					j++
 		  					return [
-		  						j, 
-		  						log.args._contract, 
-		  						log.args._req, 
+		  						log.args._contract,
+		  						log.args._name, 
+		  						log.args._req,
 		  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-		  						<button className="button pure-button" onClick={() => this.handleClaim(log.args._contract)}>Claim</button>
+		  						log.args._deadline.toNumber()
 		  					]
 		  				})
 		  				claimTable = claimTable.reduce((result, filter) => {
-						    result[filter[1]] = filter;
+						    result[filter[0]] = filter;
 						    return result;
 						},{})
 						table = table.filter(function(entry) {
-							return !(entry[1] in claimTable || entry[2] === accounts[0])
+							return !(entry[0] in claimTable || entry[2] === accounts[0])
+						})
+						if(filterTerm !== "") {
+							table = table.filter(function(entry) {
+								if(entry[1].toLowerCase().indexOf(filterTerm.toLowerCase()) === -1) {
+									return false
+								} else {
+									return true
+								}
+							})
+						}
+						table = table.map((entry, index) => {
+	  						entry[0] = entry[0].slice(0,20) + "..."
+	  						if(entry[1].length > 23) {
+	  							entry[1] = entry[1].slice(0,20) + "..."
+	  						}
+	  						var output_map = {"headers":[entry[1],entry[3] + " ETH"], "vals":[
+	  							{"contract": entry[0]},
+	  							{"deadline": "Block " + entry[4]},
+	  							{"value": entry[3] + " ETH"},
+	  							{"claim": entry[5]}
+	  						]}
+							return output_map
 						})
 		  				this.setState({ tableData: table })
 	  				})
@@ -139,17 +163,37 @@ class Marketplace extends Component {
   		})
   	}
 
+  	searchChange(event) {
+  		this.setState({searchValue: event.target.value})
+  	}
+
+  	handleSubmit(event) {
+		event.preventDefault()
+		console.log(this.state.searchValue)
+  		this.getEvents(this.state.searchValue)
+  	}
+
 	render() {
-		var headers = ["#", "Contract", "Requester", "Value", "Claim"]
+		var headers = ["Name", "Value"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
 		}
-		return (
-	        <div className="marketplace">
-	        	<h1>Marketplace</h1>
-				<Table classes="engineer-table" table={table} />
-	        </div>
+		return(
+			<main>
+	        	<Header 
+	        		text="> Marketplace"
+	        	/>
+	        	<div className="container engineer-container">
+	        		<div className="search-zone">
+			        	<form id="searchthis" onSubmit={this.handleSubmit}>
+							<input className="search-box" name="query" size="40" type="text" onChange={(this.searchChange)} placeholder="  Search "/>
+							<button className="button pure-button search-button" type="submit">Search</button>
+						</form>	
+					</div>
+	        		<DetailedTable classes="requester-table" table={table} />
+				</div>
+	        </main>
 		)
 	}
 }
