@@ -29,15 +29,17 @@ contract ReqEngContract is Ownable {
     uint256 public fee;
 
     string public dataHash;
+    string public respHash;
 
     bool active;
     bool claimed;
     bool validating;
 
-    event Deployed(address indexed _req, uint256 value, string _data);
-    event Claimed(address indexed _req, address indexed _eng, uint256 value);
-    event Validated(address indexed _req, address indexed _eng, address indexed _val, uint256 value);
-    event Deadline(address indexed _req, uint256 value);
+    event Deployed(address indexed _req, uint256 value, string _data, uint256 _timestamp);
+    event Claimed(address indexed _req, address indexed _eng, uint256 value, uint256 _timestamp);
+    event Validated(address indexed _req, address indexed _eng, address indexed _val, uint256 value, uint256 _timestamp);
+    event Failed(address indexed _req, address indexed _eng, address indexed _val, uint256 value, uint256 _timestamp);
+    event Deadline(address indexed _req, uint256 value, uint256 _timestamp);
 
     function ReqEngContract(address _req, address _onyx, address _validators, address _factory, bytes32 _name, uint256 _deadline, string _dataHash) {
     	Requester = _req;
@@ -60,7 +62,7 @@ contract ReqEngContract is Ownable {
     function transferStake() onlyOwner isApproved payable returns (bool) {
     	Onyx.transferFrom(msg.sender, this, stake);
     	active = true;
-    	Deployed(Requester, this.balance, dataHash);
+    	Deployed(Requester, this.balance, dataHash, block.timestamp);
         Factory.deployContract();
     	return active;
     }
@@ -94,45 +96,48 @@ contract ReqEngContract is Ownable {
         Onyx.transferFrom(msg.sender, this, stake);
 		Engineer = msg.sender;
 		claimed = true;
-		Claimed(Requester, Engineer, this.balance);
+		Claimed(Requester, Engineer, this.balance, block.timestamp);
         Factory.claimContract();
 		return true;
     }
 
-    function submit() returns (bool) {
+    function submit(string _dataHash) returns (bool) {
     	// TODO: Send the code to the validate function
         require(claimed && active && msg.sender == Engineer);
         if(validating == false) {
             validating = true;
-            Validators.validate();
+            respHash = _dataHash;
+            Validators.validate(_dataHash);
         }
         return validating;
     }
 
     function callDeadline() onlyOwner returns (bool) {
-        require(block.number >= deadline && validating == false);
+        require(block.timestamp >= deadline && validating == false);
         if(active) {
             Onyx.transfer(Requester, stake);
         }
         if(claimed) {
             Onyx.transfer(Engineer, stake);
         }
-        Deadline(Requester, this.balance);
+        Deadline(Requester, this.balance, block.timestamp);
         Factory.deadlineContract();
         selfdestruct(Requester);
         return true;
     }
 
     function feedback(bool _passed, address _validator) returns (bool) {
+        Validator = _validator;
     	if(_passed) {
-            Validator = _validator;
     		Onyx.transfer(Requester, stake);
             Onyx.transfer(Engineer, stake);
-            Validated(Requester, Engineer, Validator, this.balance);
+            Validated(Requester, Engineer, Validator, this.balance, block.timestamp);
             Factory.validateContract();
             selfdestruct(Engineer);
    		} else {
             validating = false;
+            Failed(Requester, Engineer, Validator, this.balance, block.timestamp);
+            Factory.failContract();
         }
     }
 }

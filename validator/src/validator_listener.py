@@ -82,13 +82,15 @@ class ValidatorListener:
 	def validate(self, re_contract):
 		if not os.path.exists(self.download_path):
 			os.makedirs(self.download_path)
-		file_id = re_contract.call().dataHash()
+		file_id = re_contract.call().respHash()
 		file_path = self.download_files(file_id)
 		val = Validator(file_path)
 		return_key = val.validate()
 		passed = False
 		if "FAILED" not in return_key:
 			passed = True
+		print("Passed: " + str(passed))
+		print(return_key)
 		self.val_net.transact({"from":self.wallet}).endValidation(passed)
 		try:
 			shutil.rmtree(self.download_path)

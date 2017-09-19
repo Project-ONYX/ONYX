@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import moment from 'moment'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
@@ -78,24 +79,42 @@ class Marketplace extends Component {
   	handleClaim(address, event) {
   		event.preventDefault();
 
-		var reContract
 		var onyx
 		var stake
+		var allowance
 
 		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Onyx.deployed().then((instance) => {
 				onyx = instance
 				onyx.stake.call().then((_stake) => {
-					stake = _stake
-					onyx.approve(address, stake.toNumber(), {from: accounts[0]}).then(() => {
-						this.state.REContract.at(address).then((instance) => {
-							reContract = instance
-							reContract.claim({from: accounts[0]}).then(() => {
-								console.log("Claimed " + address)
+					stake = _stake.toNumber()
+					onyx.allowance.call(accounts[0], address).then((_allowance) => {
+						allowance = _allowance.toNumber()
+						if(allowance >= stake) {
+							this.claim(address, accounts[0])
+						}
+						else if(allowance > 0 && allowance < stake) {
+							onyx.approve(address, 0, {from: accounts[0]}).then(() => {
+								onyx.approve(address, stake, {from: accounts[0]}).then(() => {
+									this.claim(address, accounts[0])
+								})
 							})
-						})
+						}
+						else {
+							onyx.approve(address, stake, {from: accounts[0]}).then(() => {
+								this.claim(address, accounts[0])
+							})
+						}
 					})
 				})
+			})
+		})
+  	}
+
+  	claim(address, account) {
+		this.state.REContract.at(address).then((instance) => {
+			instance.claim({from: account}).then(() => {
+				console.log("Claimed " + address)
 			})
 		})
   	}
@@ -112,7 +131,7 @@ class Marketplace extends Component {
 	  						this.state.web3.toAscii(log.args._name.replace(/0+$/g, "")),
 	  						log.args._req, 
 	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-	  						log.args._deadline.toNumber(),
+	  						moment(log.args._deadline.toNumber()).format("MM/DD/YYYY hh:mm:ss A"),
 	  						<button className="button pure-button" onClick={(e) => this.handleClaim(log.args._contract, e)}>Claim</button>
 	  					]
 	  				})
@@ -150,7 +169,7 @@ class Marketplace extends Component {
 	  						}
 	  						var output_map = {"headers":[entry[1],entry[3] + " ETH"], "vals":[
 	  							{"contract": entry[0]},
-	  							{"deadline": "Block " + entry[4]},
+	  							{"deadline": entry[4]},
 	  							{"value": entry[3] + " ETH"},
 	  							{"claim": entry[5]}
 	  						]}
@@ -186,9 +205,9 @@ class Marketplace extends Component {
 	        	/>
 	        	<div className="container engineer-container">
 	        		<div className="search-zone">
-			        	<form id="searchthis" onSubmit={this.handleSubmit}>
-							<input className="search-box" name="query" size="40" type="text" onChange={(this.searchChange)} placeholder="  Search "/>
-							<button className="button pure-button search-button" type="submit">Search</button>
+			        	<form className="pure-form search-form" id="searchthis" onSubmit={this.handleSubmit}>
+							<input className="pure-input pure-input-7-8 search-input" name="query" size="40" type="text" onChange={(this.searchChange)} placeholder="  Search "/>
+							<button className="button pure-button pure-input-1-8 search-button" type="submit">Search</button>
 						</form>	
 					</div>
 	        		<DetailedTable classes="requester-table" table={table} />

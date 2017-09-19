@@ -48,7 +48,7 @@ class Engineer extends Component {
 	    this.setState({ Factory: Factory })
 	    this.setState({ REContract: REContract })
   	}
-
+  	
 	render() {
 		return(
 			<main>

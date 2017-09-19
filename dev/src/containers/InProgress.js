@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import moment from 'moment'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
@@ -79,7 +80,7 @@ class InProgress extends Component {
 	  					return [
 	  						log.args._contract,
 	  						log.args._name, 
-	  						log.args._deadline, 
+	  						moment(log.args._deadline.toNumber()).format("MM/DD/YYYY hh:mm:ss A"),
 	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
 	  						log.args._eng
 	  					]
@@ -109,10 +110,10 @@ class InProgress extends Component {
 	  						if(log[1].length > 23) {
 	  							log[1] = log[1].slice(0,20) + "..."
 	  						}
-	  						var output_map = {"headers":[log[1], log[5] + " ETH"], "vals":[
+	  						var output_map = {"headers":[log[1], log[3] + " ETH"], "vals":[
 	  							{"contract": log[0].slice(0,20) + "..."},
 	  							{"engineer": log[4].slice(0,20) + "..."},
-	  							{"deadline": "Block " + log[2]},
+	  							{"deadline": log[2]},
 	  							{"value": log[3] + " ETH"}
 	  						]}
 	  						return output_map

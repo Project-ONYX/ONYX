@@ -265,6 +265,20 @@ small screens.
     outline: none;
 }
 
+.validate-modal {
+  position: relative;
+  margin: 0 auto;
+  width: 300px;
+  height: 230px;
+  background: #ccc;
+  padding: 10px;
+  border: 2px solid;
+}
+
+.validate-modal:focus {
+    outline: none;
+}
+
 /* -- Responsive Styles (Media Queries) ------------------------------------- */
 
 /*

@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import getWeb3 from '../utils/getWeb3'
 import ReactModal from 'react-modal'
 import axios from 'axios'
+import moment from 'moment'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
@@ -92,7 +93,6 @@ class Requester extends Component {
 
 	handleFileChange(files) {
 		var name = files[0].name
-		console.log(name.length)
 		if(name.length > 15) {
 			name = name.slice(0, 15) + "..."
 		}
@@ -130,7 +130,7 @@ class Requester extends Component {
 			  this.state.Factory.deployed().then((instance) => {
 			    factory = instance
 			    // Get the value from the contract to prove it worked.
-			    return factory.newContract(this.state.web3.fromAscii(this.state.nameValue, 32), this.state.deadlineValue, id, {from: accounts[0]})
+			    return factory.newContract(this.state.web3.fromAscii(this.state.nameValue, 32), moment(this.state.deadlineValue).valueOf(), id, {from: accounts[0]})
 			  }).then((addr) => {
 			  	address = addr.logs[0].args._contract
 			  	this.state.Onyx.deployed().then((instance) => {
@@ -141,11 +141,7 @@ class Requester extends Component {
 							this.state.REContract.at(address).then((instance) => {
 								reContract = instance
 								reContract.transferStake.sendTransaction({from: accounts[0], value: this.state.web3.toWei(this.state.EthValue, 'ether')}).then(() => {
-									this.setState({nameValue: ""})
-									this.setState({deadlineValue: ""})
-				  					this.setState({EthValue: ""})
-				  					this.setState({filePicked: false})
-				  					this.setState({inputButtonLabel: "Select File"})
+		  							this.handleCloseModal()
 								})
 							})
 						})
@@ -156,7 +152,6 @@ class Requester extends Component {
 		}).catch(function(err) {
 			console.log(err);
 		})
-		this.handleCloseModal()
 	}
 
 	handleDeadlineChange(event) {
@@ -216,7 +211,7 @@ class Requester extends Component {
 	          			<form className="pure-form pure-form-stacked requester-form" onSubmit={this.handleSubmit}>
 					    	<input className="requester-form-entry fileUpload" onChange={(e) => {this.handleFileChange(e.target.files)}} name='file' type="file" id="file" placeholder="Upload File" /><label htmlFor="file">{ this.state.inputButtonLabel }</label>
 					    	<input className="requester-form-entry" value={this.state.nameValue} onChange={this.handleNameChange} id="name" placeholder="Name" />
-					    	<input className="requester-form-entry" value={this.state.deadlineValue} onChange={this.handleDeadlineChange} id="deadline" placeholder="Deadline" />
+					    	<input className="requester-form-entry" type="datetime-local" onChange={this.handleDeadlineChange} id="deadline" placeholder="Deadline" />
 					    	<input className="requester-form-entry" value={this.state.EthValue} onChange={this.handleEthChange} id="ether" placeholder="ETH" />
 					    	<button className="button-xlarge pure-button requester-button">Request Task</button>
 						</form>

@@ -29,7 +29,7 @@ contract ValidatorNetwork is Ownable {
     event RandNum(uint256 _val);
     event NewValidator(address indexed _val);
     event DeleteValidator(address indexed _val);
-    event Validate(address indexed _val, address _job);
+    event Validate(address indexed _val, string _dataHash, address _job);
     event Validated(address indexed _val, address _job);
 
     function ValidatorNetwork(address _onyx) {
@@ -100,19 +100,19 @@ contract ValidatorNetwork is Ownable {
         return valList[randNum];
     }
 
-    function validate() returns (address) {
+    function validate(string _dataHash) returns (address) {
         address randomValidatorAddress = getRandomValidator();
         Validator randomValidator = validators[randomValidatorAddress];
         randomValidator.currentAssignment = msg.sender;
-        Validate(randomValidatorAddress, msg.sender);
+        Validate(randomValidatorAddress, _dataHash, msg.sender);
         return randomValidatorAddress;
     }
 
     function endValidation(bool _passed) returns (bool) {
-        ReqEngContract regContract = ReqEngContract(validators[msg.sender].currentAssignment);
+        ReqEngContract reqContract = ReqEngContract(validators[msg.sender].currentAssignment);
         Validated(msg.sender, validators[msg.sender].currentAssignment);
         validators[msg.sender].currentAssignment = 0;
-        regContract.feedback(_passed, msg.sender);
+        reqContract.feedback(_passed, msg.sender);
         return true;
     }
 }

@@ -300,6 +300,10 @@ code {
     background-color: red;
 }
 
+.valUploadInput + label {
+  padding: 0.4em;
+}
+
 .tile {
   width: 200px;
   height: 200px;
@@ -327,20 +331,25 @@ code {
   width: 90%;
 }
 
-.search-box {
-  font-size: 1em;
-  padding: 5px 5px 10px 5px;
-  width: 85%;
+.search-form {
+  width: 100%;
+}
+
+.search-input {
+  max-width: 100%;
 }
 
 .search-button {
   background: #37BF7B;
   margin-top: 10px;
-  width: 90%;
+  width: 100%;
 }
 
 .search-zone {
   margin: 1em 0 1em 0;
+  width: 90%;
+  margin: 0 auto;
+  margin-top: 30px;
 }
 
 .button-zone {
@@ -357,13 +366,17 @@ code {
     text-align: center;
   }
 
-  .search-box {
-      width: 80%;
+  .search-form {
+      width: 100%;
+  }
+
+  .search-input {
+    width: 83%;
   }
 
   .search-button {
-    width: auto;
-    margin-left: 10px;
+    width: 15%;
+    margin-left: 2%;
     margin-top: 0px;
   }
 

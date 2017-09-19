@@ -76,6 +76,12 @@ class Toaster extends Component {
 				  		this.claimToast(result)
 					}
 				})
+				var fail = factory.Failed({_eng: accounts[0]}, {fromBlock: "latest"})
+				fail.watch((error, result) => {
+					if (error == null) {
+				  		this.failToast(result)
+					}
+				})
 		    })
 		})
   	}
@@ -113,6 +119,16 @@ class Toaster extends Component {
   	reqValToast(result) {
   		this.container.success(
       		"Your request has been validated",
+      		this.state.web3.toAscii(result.args._name.replace(/0+$/g, "")), {
+      		timeOut: 3000,
+      		extendedTimeOut: 3000,
+      		closeButton:true,
+    	});
+  	}
+
+  	failToast(result) {
+  		this.container.error(
+      		"Your code has failed validation",
       		this.state.web3.toAscii(result.args._name.replace(/0+$/g, "")), {
       		timeOut: 3000,
       		extendedTimeOut: 3000,

@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import moment from 'moment'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
@@ -74,7 +75,7 @@ class Validated extends Component {
 	  						log.args._contract, 
 	  						log.args._name, 
 	  						log.args._eng,
-	  						log.args._deadline,
+	  						moment(log.args._deadline.toNumber()).format("MM/DD/YYYY hh:mm:ss A"),
 	  						log.args._val,
 	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether")
 	  					]
@@ -88,7 +89,7 @@ class Validated extends Component {
 	  						{"contract": log[0].slice(0,20) + "..."},
 	  						{"engineer": log[2].slice(0,20) + "..."},
 	  						{"validator": log[4].slice(0,20) + "..."},
-	  						{"deadline": "Block " + log[3]},
+	  						{"deadline": log[3]},
 	  						{"value": log[5] + " ETH"}
 	  					]}
 	  					return output_map
