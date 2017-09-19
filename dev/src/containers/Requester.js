@@ -124,6 +124,7 @@ class Requester extends Component {
 			var reContract
 			var stake
 			var address
+			var allowance
 
 			// Get accounts.
 			this.state.web3.eth.getAccounts((error, accounts) => {
@@ -137,20 +138,40 @@ class Requester extends Component {
 			  		onyx = instance
 			  		onyx.stake.call().then((_stake) => {
 			  			stake = _stake.toNumber()
-			  			onyx.approve(address, stake, {from: accounts[0]}).then(() => {
-							this.state.REContract.at(address).then((instance) => {
-								reContract = instance
-								reContract.transferStake.sendTransaction({from: accounts[0], value: this.state.web3.toWei(this.state.EthValue, 'ether')}).then(() => {
-		  							this.handleCloseModal()
+			  			onyx.allowance.call(accounts[0], address).then((_allowance) => {
+			  				allowance = _allowance.toNumber()
+			  				if(allowance >= stake) {
+			  					this.request(address, accounts[0])
+			  				}
+			  				else if(allowance > 0 && allowance < stake) {
+			  					onyx.approve(address, 0, {from accounts[0]}).then(() => {
+			  						onyx.approve(address, stake, {from: accounts[0]}).then(() => {
+			  							this.request(address, accounts[0])
+			  						})
+			  					})
+			  				}
+			  				else {
+					  			onyx.approve(address, stake, {from: accounts[0]}).then(() => {
+					  				this.request(address, accounts[0])
 								})
-							})
-						})
+			  				}
+			  			})
 					})
 				})
 			  })
 			})
 		}).catch(function(err) {
 			console.log(err);
+		})
+	}
+
+	request(address, account) {
+		var reContract
+		this.state.REContract.at(address).then((instance) => {
+			reContract = instance
+			reContract.transferStake.sendTransaction({from: account, value: this.state.web3.toWei(this.state.EthValue, 'ether')}).then(() => {
+				this.handleCloseModal()
+			})
 		})
 	}
 
