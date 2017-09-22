@@ -1,7 +1,6 @@
 import sys
 import os
 import argparse
-import unittest
 import atexit
 import requests
 import shutil
@@ -72,25 +71,28 @@ class ValidatorListener:
 	def validation_call(self, log_entry):
 		if(self.active):
 			job = log_entry["args"]["_job"]
+			data = log_entry["args"]["_dataHash"]
 			print("NEW JOB: " + job)
+			print("DataHash: " + data)
 			re_contract = self.web3.eth.contract(abi=ContractHelper.getABI('ReqEngContract'), address=job)
-			self.validate(re_contract)
+			self.validate(re_contract, data)
 
 	# Downloads and Runs test cases for the validation job
 	# Also writes results back to the blockchain
 	# Creates and deletes all directories required for the testing
-	def validate(self, re_contract):
+	def validate(self, re_contract, data):
 		if not os.path.exists(self.download_path):
 			os.makedirs(self.download_path)
-		file_id = re_contract.call().respHash()
+		file_id = data
 		file_path = self.download_files(file_id)
 		val = Validator(file_path)
-		return_key = val.validate()
-		passed = False
+		return_key = val.run_tests()
+		passed = ""
 		if "FAILED" not in return_key:
-			passed = True
+			passed = return_key
+		else:
+			passed = ""
 		print("Passed: " + str(passed))
-		print(return_key)
 		self.val_net.transact({"from":self.wallet}).endValidation(passed)
 		try:
 			shutil.rmtree(self.download_path)
@@ -144,6 +146,8 @@ if __name__=="__main__":
 			validator.new_validator()
 		if(user_input == "stop"):
 			validator.delete_validator()
+		if(user_input == "balance"):
+			print(validator.get_balance())
 		if(user_input == "quit"):
 			validator.delete_validator()
 			keep_going = False

@@ -29,9 +29,9 @@ contract ReqEngContractFactory {
         valNet = _validators;
     }
 
-    function newContract(bytes32 _name, uint256 _deadline, string _dataHash) returns (address) {
+    function newContract(bytes32 _name, uint256 _deadline, string _dataHash, bytes32 _secretHash) returns (address) {
         address req = msg.sender;
-        address contractAddr = new ReqEngContract(req, onyx, valNet, this, _name, _deadline, _dataHash);
+        address contractAddr = new ReqEngContract(req, onyx, valNet, this, _name, _deadline, _dataHash, _secretHash);
         ReqEngContract(contractAddr).transferOwnership(req);
         outstandingContracts[contractAddr] += 1;
         NewContract(contractAddr, req, _name, _deadline, _dataHash, block.timestamp);

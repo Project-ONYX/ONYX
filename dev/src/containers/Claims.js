@@ -263,7 +263,7 @@ class Claims extends Component {
 					<form className="pure-form pure-form-stacked requester-form" onSubmit={this.handleValidate }>
 						<input className="valUploadInput fileUpload" onChange={ (e) => {this.handleUpload(e.target.files)} } name='file' type="file" id="file" placeholder="Upload File" /> 
 						<label htmlFor="file" >{this.state.validationUploadButtonName}</label> 
-	 				   	<button className="button-xlarge pure-button requester-button">Request Task</button>
+	 				   	<button className="button-xlarge pure-button validator-button">Validate</button>
 					</form>
 					<div className="modal-bottom">
 					</div>

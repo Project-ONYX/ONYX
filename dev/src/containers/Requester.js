@@ -27,7 +27,8 @@ class Requester extends Component {
 		  	showModal: false,
 		  	modalXHover: false,
 		  	inputButtonLabel: "Select File",
-		  	filePicked: false
+		  	filePicked: false,
+		  	SecretValue: ""
 		}
 
 		this.handleNameChange = this.handleNameChange.bind(this);
@@ -38,6 +39,7 @@ class Requester extends Component {
 		this.handleCloseModal = this.handleCloseModal.bind(this);
 		this.handleHover = this.handleHover.bind(this);
 		this.handleFileChange = this.handleFileChange.bind(this);
+		this.handleSecret = this.handleSecret.bind(this);
 	}
 
   	componentWillMount() {
@@ -84,7 +86,8 @@ class Requester extends Component {
 		this.setState({EthValue: ""})
 		this.setState({filePicked: false})
 		this.setState({inputButtonLabel: "Select File"})
-		this.setState({ showModal: false });
+		this.setState({showModal: false})
+		this.setState({SecretValue: ""})
 	}
 
 	handleHover() {
@@ -131,7 +134,7 @@ class Requester extends Component {
 			  this.state.Factory.deployed().then((instance) => {
 			    factory = instance
 			    // Get the value from the contract to prove it worked.
-			    return factory.newContract(this.state.web3.fromAscii(this.state.nameValue, 32), moment(this.state.deadlineValue).valueOf(), id, {from: accounts[0]})
+			    return factory.newContract(this.state.web3.fromAscii(this.state.nameValue, 32), moment(this.state.deadlineValue).valueOf(), id, this.state.web3.sha3(this.state.SecretValue), {from: accounts[0]})
 			  }).then((addr) => {
 			  	address = addr.logs[0].args._contract
 			  	this.state.Onyx.deployed().then((instance) => {
@@ -144,7 +147,7 @@ class Requester extends Component {
 			  					this.request(address, accounts[0])
 			  				}
 			  				else if(allowance > 0 && allowance < stake) {
-			  					onyx.approve(address, 0, {from accounts[0]}).then(() => {
+			  					onyx.approve(address, 0, {from: accounts[0]}).then(() => {
 			  						onyx.approve(address, stake, {from: accounts[0]}).then(() => {
 			  							this.request(address, accounts[0])
 			  						})
@@ -185,6 +188,10 @@ class Requester extends Component {
 
 	handleNameChange(event) {
 		this.setState({nameValue: event.target.value})
+	}
+
+	handleSecret(event) {
+		this.setState({SecretValue: event.target.value})
 	}
 
 	render() {
@@ -233,6 +240,7 @@ class Requester extends Component {
 					    	<input className="requester-form-entry fileUpload" onChange={(e) => {this.handleFileChange(e.target.files)}} name='file' type="file" id="file" placeholder="Upload File" /><label htmlFor="file">{ this.state.inputButtonLabel }</label>
 					    	<input className="requester-form-entry" value={this.state.nameValue} onChange={this.handleNameChange} id="name" placeholder="Name" />
 					    	<input className="requester-form-entry" type="datetime-local" onChange={this.handleDeadlineChange} id="deadline" placeholder="Deadline" />
+					    	<input className="requester-form-entry" value={this.state.SecretValue} onChange={this.handleSecret} id="ether" placeholder="Secret Passphrase" />
 					    	<input className="requester-form-entry" value={this.state.EthValue} onChange={this.handleEthChange} id="ether" placeholder="ETH" />
 					    	<button className="button-xlarge pure-button requester-button">Request Task</button>
 						</form>

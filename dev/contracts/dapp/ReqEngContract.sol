@@ -30,6 +30,7 @@ contract ReqEngContract is Ownable {
 
     string public dataHash;
     string public respHash;
+    bytes32 public secretHash;
 
     bool active;
     bool claimed;
@@ -41,7 +42,7 @@ contract ReqEngContract is Ownable {
     event Failed(address indexed _req, address indexed _eng, address indexed _val, uint256 value, uint256 _timestamp);
     event Deadline(address indexed _req, uint256 value, uint256 _timestamp);
 
-    function ReqEngContract(address _req, address _onyx, address _validators, address _factory, bytes32 _name, uint256 _deadline, string _dataHash) {
+    function ReqEngContract(address _req, address _onyx, address _validators, address _factory, bytes32 _name, uint256 _deadline, string _dataHash, bytes32 _secretHash) {
     	Requester = _req;
     	Onyx = OnyxToken(_onyx);
     	Validators = ValidatorNetwork(_validators);
@@ -54,6 +55,7 @@ contract ReqEngContract is Ownable {
     	claimed = false;
     	deadline = _deadline;
         validating = false;
+        secretHash = _secretHash;
     }
 
     /**
@@ -126,9 +128,9 @@ contract ReqEngContract is Ownable {
         return true;
     }
 
-    function feedback(bool _passed, address _validator) returns (bool) {
+    function feedback(bytes32 _passPhrase, address _validator) returns (bool) {
         Validator = _validator;
-    	if(_passed) {
+    	if(secretHash == _passPhrase) {
     		Onyx.transfer(Requester, stake);
             Onyx.transfer(Engineer, stake);
             Validated(Requester, Engineer, Validator, this.balance, block.timestamp);

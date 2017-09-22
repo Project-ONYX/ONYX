@@ -108,11 +108,11 @@ contract ValidatorNetwork is Ownable {
         return randomValidatorAddress;
     }
 
-    function endValidation(bool _passed) returns (bool) {
+    function endValidation(string _passPhrase) returns (bool) {
         ReqEngContract reqContract = ReqEngContract(validators[msg.sender].currentAssignment);
         Validated(msg.sender, validators[msg.sender].currentAssignment);
         validators[msg.sender].currentAssignment = 0;
-        reqContract.feedback(_passed, msg.sender);
+        reqContract.feedback(sha3(_passPhrase), msg.sender);
         return true;
     }
 }

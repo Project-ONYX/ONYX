@@ -34,7 +34,7 @@ class DetailedRow extends Component {
     let panel = this.props.data.vals.map((values, index) => {
       var name = Object.keys(values)[0]
       var value = values[name]
-      return <div key={index}> <strong>{name}</strong> : {value} </div>
+      return <div key={index} className="panelText"> <strong>{name}</strong> : {value} </div>
     })
   	return (
   		<div className="detailedRow">
