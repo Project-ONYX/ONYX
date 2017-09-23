@@ -41,7 +41,7 @@ class App extends Component {
         return OnyxInstance.balanceOf.call(accounts[0])
       }).then((result) => {
         // Update state with the result.
-        return this.setState({ balance: result.c[0] })
+        return this.setState({ balance: this.state.web3.fromWei(result.toNumber(), 'ether') })
       })
     })
   }

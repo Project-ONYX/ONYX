@@ -16,8 +16,8 @@ contract TradeNetwork is Ownable {
         uint256 id;
         address from;
         address to;
-        uint256 amount;
-        uint256 exchangeRate;
+        uint256 amountONYX;
+        uint256 amountETH;
         bool complete;
         bool canceled;
     }
@@ -25,9 +25,8 @@ contract TradeNetwork is Ownable {
     mapping(uint256 => Trade) trades;
     uint256 indexCounter = 0;
 
-    event NewTrade(uint256 _id, address indexed _from, uint256 _amount, uint256 _exchangeRate, uint256 _timestamp);
-    event CancelTrade(uint256 _id, address indexed _from, uint256 _amount, uint256 _exchangeRate, uint256 _timestamp);
-    event CompleteTrade(uint256 _id, address indexed _from, address indexed _to, uint256 _amount, uint256 _exchangeRate, uint256 _timestamp);
+    event NewTrade(uint256 _id, address indexed _from, uint256 _amountONYX, uint256 _amountETH, uint256 _timestamp);
+    event CloseTrade(uint256 _id, address indexed _from, address indexed _to, uint256 _amountONYX, uint256 _amountETH, uint256 _timestamp);
 
     function TradeNetwork(address _onyx) {
         Onyx = OnyxToken(_onyx);
@@ -43,27 +42,27 @@ contract TradeNetwork is Ownable {
         _;
     }
 
-    function newTrade(uint256 _amount, uint256 _exchangeRate) isApproved(_amount) returns (bool) {
-        Onyx.transferFrom(msg.sender, this, _amount);
+    function newTrade(uint256 _amountONYX, uint256 _amountETH) isApproved(_amountONYX) returns (bool) {
+        Onyx.transferFrom(msg.sender, this, _amountONYX);
         uint256 id = getId();
-        Trade memory trade = Trade(id, msg.sender, 0, _amount, _exchangeRate, false, false);
+        Trade memory trade = Trade(id, msg.sender, 0, _amountONYX, _amountETH, false, false);
         trades[id] = trade;
-        NewTrade(id, msg.sender, _amount, _exchangeRate, block.timestamp);
+        NewTrade(id, msg.sender, _amountONYX, _amountETH, block.timestamp);
     }
 
     function cancelTrade(uint256 _id) isOpenTrade(_id) returns (bool) {
         require(trades[_id].from == msg.sender);
-        Onyx.transfer(msg.sender, trades[_id].amount);
+        Onyx.transfer(msg.sender, trades[_id].amountONYX);
         trades[_id].canceled = true;
-        CancelTrade(_id, msg.sender, trades[_id].amount, trades[_id].exchangeRate, block.timestamp);
+        CloseTrade(_id, msg.sender, 0, trades[_id].amountONYX, trades[_id].amountETH, block.timestamp);
     }
 
     function claimTrade(uint256 _id) payable isOpenTrade(_id) returns (bool) {
-        require(trades[_id].from != msg.sender && trades[_id].amount.mul(trades[_id].exchangeRate) == msg.value);
-        Onyx.transfer(msg.sender, trades[_id].amount);
+        require(trades[_id].from != msg.sender && trades[_id].amountETH == msg.value);
+        Onyx.transfer(msg.sender, trades[_id].amountONYX);
         trades[_id].from.transfer(msg.value);
         trades[_id].complete = true;
-        CompleteTrade(_id, trades[_id].from, msg.sender, trades[_id].amount, trades[_id].exchangeRate, block.timestamp);
+        CloseTrade(_id, trades[_id].from, msg.sender, trades[_id].amountONYX, trades[_id].amountETH, block.timestamp);
     }
 
     function getId() returns (uint256) {

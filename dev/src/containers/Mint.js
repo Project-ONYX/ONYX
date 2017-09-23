@@ -24,7 +24,7 @@ class Mint extends Component {
 		  this.props.Onyx.deployed().then((instance) => {
 		    onyx = instance
 		    // Get the value from the contract to prove it worked.
-		    return onyx.mint(accounts[0], this.state.value, {from: accounts[0]})
+		    return onyx.mint(accounts[0], this.props.web3.toWei(this.state.value, 'ether'), {from: accounts[0]})
 		  }).then(() => {
 		  	this.setState({value: ""})
 		  })

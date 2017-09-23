@@ -1,14 +1,19 @@
 import React, { Component } from 'react'
 import moment from 'moment'
+import getWeb3 from '../utils/getWeb3'
 import ReactModal from 'react-modal'
 import Header from '../components/Header'
 import DetailedTable from '../components/DetailedTable'
+import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
+import TradeNetworkContract from '../../build/contracts/TradeNetwork.json'
 
 class Transfer extends Component {
 	constructor(props) {
 		super(props)
 
 		this.state = {
+			web3: "",
+			TradeNetwork: "",
 		  	address: "",
 		  	amount: "",
 		  	numSell: "",
@@ -18,32 +23,107 @@ class Transfer extends Component {
 		}
 
 		this.getEvents = this.getEvents.bind(this);
-		this.handleAmountChange = this.handleAmountChange.bind(this);
-		this.handleAddressChange = this.handleAddressChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.handleNumChange = this.handleNumChange.bind(this);
 		this.handlePriceChange = this.handlePriceChange.bind(this);
 		this.handleHover = this.handleHover.bind(this);
 		this.handleOpenModal = this.handleOpenModal.bind(this);
 		this.handleCloseModal = this.handleCloseModal.bind(this);
+		this.newTrade = this.newTrade.bind(this);
+		this.handleTrade = this.handleTrade.bind(this);
 	}
+
+  	componentWillMount() {
+	    getWeb3
+	    .then(results => {
+	      this.setState({
+	        web3: results.web3
+	      })
+
+	      // Instantiate contract once web3 provided.
+	      this.instantiateContract()
+	    })
+	    .catch((e) => {
+	      console.log('Error finding web3.')
+	      console.log(e)
+	    })
+  	}
+
+  	instantiateContract() {
+	    const contract = require('truffle-contract')
+	    const Onyx = contract(OnyxTokenContract)
+	    const TradeNetwork = contract(TradeNetworkContract)
+	    Onyx.setProvider(this.state.web3.currentProvider)
+	    TradeNetwork.setProvider(this.state.web3.currentProvider)
+	    this.setState({ Onyx: Onyx })
+	    this.setState({ TradeNetwork: TradeNetwork })
+		
+	    var tradeNet
+		this.state.web3.eth.getAccounts((error, accounts) => {
+		    this.state.TradeNetwork.deployed().then((instance) => {
+		    	tradeNet = instance
+				var newTrades = tradeNet.NewTrade({}, {fromBlock: "latest"})
+				newTrades.watch((error, result) => {
+					if (error == null) {
+				  		this.getEvents()
+					}
+				})
+				var closedTrades = tradeNet.CloseTrade({}, {fromBlock: "latest"})
+				closedTrades.watch((error, result) => {
+					if (error == null) {
+				  		this.getEvents()
+					}
+				})
+		    })
+		})
+	    this.getEvents()
+  	}
 
 	handleSubmit(event) {
 		event.preventDefault()
 
-		// Declaring this for later so we can chain functions on OnyxToken.
-		var onyx
+		var numONYX = this.state.web3.toWei(this.state.numSell, 'ether')
+		var numEther = this.state.priceSell*numONYX
 
-		// Get accounts.
-		this.props.web3.eth.getAccounts((error, accounts) => {
-		  this.props.Onyx.deployed().then((instance) => {
-		    onyx = instance
-		    // Get the value from the contract to prove it worked.
-		    return onyx.transfer(this.state.address, this.state.amount, {from: accounts[0]})
-		  }).then(() => {
-		  	this.setState({address: ""})
-		  	this.setState({amount: ""})
-		  })
+		var onyx
+		var tradeNet
+		var allowance
+
+		this.state.web3.eth.getAccounts((error, accounts) => {
+			this.state.Onyx.deployed().then((instance) => {
+				onyx = instance
+				this.state.TradeNetwork.deployed().then((instance) => {
+					tradeNet = instance
+					onyx.allowance.call(accounts[0], this.state.TradeNetwork.address).then((_allowance) => {
+		  				allowance = _allowance.toNumber()
+		  				if(allowance >= numONYX) {
+		  					this.newTrade(numONYX, numEther)
+		  				}
+		  				else if(allowance > 0 && allowance < numONYX) {
+		  					onyx.approve(this.state.TradeNetwork.address, 0, {from: accounts[0]}).then(() => {
+		  						onyx.approve(this.state.TradeNetwork.address, numONYX, {from: accounts[0]}).then(() => {
+		  							this.newTrade(numONYX, numEther)
+		  						})
+		  					})
+		  				}
+		  				else {
+				  			onyx.approve(this.state.TradeNetwork.address, numONYX, {from: accounts[0]}).then(() => {
+				  				this.newTrade(numONYX, numEther)
+							})
+		  				}
+		  			})
+				})
+			})
+		})
+	}
+
+	newTrade(numONYX, numEther, account) {
+		var tradeNet
+		this.state.TradeNetwork.deployed().then((instance) => {
+			tradeNet = instance
+			tradeNet.newTrade(numONYX, numEther, {from: account}).then(() => {
+				this.handleCloseModal()
+			})
 		})
 	}
 
@@ -77,59 +157,55 @@ class Transfer extends Component {
 		this.setState({priceSell: event.target.value})
 	}
 
-  	getEvents(filterTerm) {
+	handleTrade(id, amountEth, account, event) {
+		event.preventDefault()
+
+		this.state.TradeNetwork.deployed().then((instance) => {
+			instance.claimTrade.sendTransaction(id, {from: account, value: amountEth})
+		})
+	}
+
+  	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
-	  		this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Deployed({}, {fromBlock: 0, toBlock: 'latest'})
+	  		this.state.TradeNetwork.deployed().then((instance) => {
+	 			let event = instance.NewTrade({}, {fromBlock: 0, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map((log, index) => {
 	  					return [
-	  						log.args._contract,
-	  						this.state.web3.toAscii(log.args._name.replace(/0+$/g, "")),
-	  						log.args._req, 
-	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-	  						moment(log.args._deadline.toNumber()).format("MM/DD/YYYY hh:mm:ss A"),
-	  						<button className="button pure-button" onClick={(e) => this.handleClaim(log.args._contract, e)}>Claim</button>
+	  						log.args._id.toNumber(),
+	  						log.args._from, 
+	  						this.state.web3.fromWei(log.args._amountONYX.toNumber(), "ether"),
+	  						this.state.web3.fromWei(log.args._amountETH.toNumber(), "ether"),
+	  						moment(log.args._timestamp.toNumber()).format("MM/DD/YYYY hh:mm:ss A"),
+	  						<button className="button pure-button" onClick={(e) => this.handleTrade(log.args._id, log.args._amountETH, accounts[0], e)}>Trade</button>
 	  					]
 	  				})
-	  				let claimEvent = instance.Claimed({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
-		  			claimEvent.get((error, logs) => {
-		  				var claimTable = logs.map(log => {
+	  				let closeEvent = instance.CloseTrade({}, {fromBlock: 0, toBlock: 'latest'})
+		  			closeEvent.get((error, logs) => {
+		  				var closeTable = logs.map(log => {
 		  					return [
-		  						log.args._contract,
-		  						log.args._name, 
-		  						log.args._req,
-		  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"), 
-		  						log.args._deadline.toNumber()
+		  						log.args._id,
+		  						log.args._from,
+		  						log.args._to,
+		  						this.state.web3.fromWei(log.args._amountONYX.toNumber(), "ether"),
+		  						this.state.web3.fromWei(log.args._amountETH.toNumber(), "ether"),
+		  						moment(log.args._timestamp.toNumber()).format("MM/DD/YYYY hh:mm:ss A")
 		  					]
 		  				})
-		  				claimTable = claimTable.reduce((result, filter) => {
+		  				closeTable = closeTable.reduce((result, filter) => {
 						    result[filter[0]] = filter;
 						    return result;
 						},{})
 						table = table.filter(function(entry) {
-							return !(entry[0] in claimTable || entry[2] === accounts[0])
+							return !(entry[0] in closeTable)
 						})
-						if(filterTerm !== "") {
-							table = table.filter(function(entry) {
-								if(entry[1].toLowerCase().indexOf(filterTerm.toLowerCase()) === -1) {
-									return false
-								} else {
-									return true
-								}
-							})
-						}
 						table = table.map((entry, index) => {
-	  						entry[0] = entry[0].slice(0,20) + "..."
-	  						if(entry[1].length > 23) {
-	  							entry[1] = entry[1].slice(0,20) + "..."
-	  						}
-	  						var output_map = {"headers":[entry[1],entry[3] + " ETH"], "vals":[
-	  							{"contract": entry[0]},
-	  							{"deadline": entry[4]},
-	  							{"value": entry[3] + " ETH"},
-	  							{"claim": entry[5]}
+	  						entry[1] = entry[1].slice(0,20) + "..."
+	  						var output_map = {"headers":[entry[3]/entry[2], entry[2] + " ONYX"], "vals":[
+	  							{"from": entry[1]},
+	  							{"Eth Needed": entry[3]},
+	  							{"trade": entry[5]}
 	  						]}
 							return output_map
 						})
@@ -148,7 +224,7 @@ class Transfer extends Component {
 		} else {
 			x_class = "fa fa-2x fa-times-circle-o modal-exit"
 		}
-		var headers = ["Price", "#"]
+		var headers = ["Price (ETH/ONYX)", "# ONYX"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
@@ -156,7 +232,7 @@ class Transfer extends Component {
 		return (
 	        <main>
 	          	<Header
-	          		text="> Transfer"
+	          		text="> Trade ONYX"
 	          	/>
 	          	<div className="container transfer-container">
 		    		<div className="button-zone">
@@ -186,7 +262,7 @@ class Transfer extends Component {
           			</div>
           			<form className="pure-form pure-form-stacked requester-form" onSubmit={this.handleSubmit}>
 				    	<input className="requester-form-entry" value={this.state.numSell} onChange={this.handleNumChange} id="name" placeholder="# ONYX" />
-				    	<input className="requester-form-entry" value={this.state.priceSell} onChange={this.handlePriceChange} id="ether" placeholder="Strike Price" />
+				    	<input className="requester-form-entry" value={this.state.priceSell} onChange={this.handlePriceChange} id="strike_price" placeholder="Sell Price (ETH/ONYX)" />
 				    	<button className="button-xlarge pure-button transfer-button">Place Sell Order</button>
 					</form>
 					<div className="modal-bottom">

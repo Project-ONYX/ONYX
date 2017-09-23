@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
+import TradeNetworkContract from '../../build/contracts/TradeNetwork.json'
 import getWeb3 from '../utils/getWeb3'
 
 var ReactToastr = require("react-toastr");
@@ -17,6 +18,7 @@ class Toaster extends Component {
 			Onyx: "",
 			Factory: "",
 			REContract: "",
+			TradeNetwork: ""
 		}
 	}
 
@@ -41,50 +43,102 @@ class Toaster extends Component {
 	    const Onyx = contract(OnyxTokenContract)
 	    const Factory = contract(ReqEngContractFactory)
 	    const REContract = contract(ReqEngContract)
+	    const TradeNetwork = contract(TradeNetworkContract)
 	    Onyx.setProvider(this.state.web3.currentProvider)
 	    Factory.setProvider(this.state.web3.currentProvider)
 	    REContract.setProvider(this.state.web3.currentProvider)
+	    TradeNetwork.setProvider(this.state.web3.currentProvider)
 	    this.setState({ Onyx: Onyx })
 	    this.setState({ Factory: Factory })
 	    this.setState({ REContract: REContract })
+	    this.setState({ TradeNetwork: TradeNetwork })
 
 	    var factory
+	    var tradeNet
 	    this.state.web3.eth.getAccounts((error, accounts) => {
 		    this.state.Factory.deployed().then((instance) => {
 		    	factory = instance
-				var val = factory.Validated({_eng: accounts[0]}, {fromBlock: "latest"})
-				val.watch((error, result) => {
-					if (error == null) {
-				  		this.valToast(result)
-					}
-				})
-				var reqVal = factory.Validated({_req: accounts[0]}, {fromBlock: "latest"})
-				reqVal.watch((error, result) => {
-					if (error == null) {
-				  		this.reqValToast(result)
-					}
-				})
-				var deploy = factory.Deployed({_req: accounts[0]}, {fromBlock: "latest"})
-				deploy.watch((error, result) => {
-					if (error == null) {
-				  		this.deployToast(result)
-					}
-				})
-				var claim = factory.Claimed({_eng: accounts[0]}, {fromBlock: "latest"})
-				claim.watch((error, result) => {
-					if (error == null) {
-				  		this.claimToast(result)
-					}
-				})
-				var fail = factory.Failed({_eng: accounts[0]}, {fromBlock: "latest"})
-				fail.watch((error, result) => {
-					if (error == null) {
-				  		this.failToast(result)
-					}
-				})
+		    	this.state.TradeNetwork.deployed().then((instance) => {
+		    		tradeNet = instance
+					var val = factory.Validated({_eng: accounts[0]}, {fromBlock: "latest"})
+					val.watch((error, result) => {
+						if (error == null) {
+					  		this.valToast(result)
+						}
+					})
+					var reqVal = factory.Validated({_req: accounts[0]}, {fromBlock: "latest"})
+					reqVal.watch((error, result) => {
+						if (error == null) {
+					  		this.reqValToast(result)
+						}
+					})
+					var deploy = factory.Deployed({_req: accounts[0]}, {fromBlock: "latest"})
+					deploy.watch((error, result) => {
+						if (error == null) {
+					  		this.deployToast(result)
+						}
+					})
+					var claim = factory.Claimed({_eng: accounts[0]}, {fromBlock: "latest"})
+					claim.watch((error, result) => {
+						if (error == null) {
+					  		this.claimToast(result)
+						}
+					})
+					var fail = factory.Failed({_eng: accounts[0]}, {fromBlock: "latest"})
+					fail.watch((error, result) => {
+						if (error == null) {
+					  		this.failToast(result)
+						}
+					})
+					var newTrade = tradeNet.NewTrade({_from: accounts[0]}, {fromBlock: "latest"})
+					newTrade.watch((error, result) => {
+						if (error == null) {
+							this.newTradeToast(result)
+						}
+					})
+					var closeTrade = tradeNet.CloseTrade({_from: accounts[0]}, {fromBlock: "latest"})
+					closeTrade.watch((error, result) => {
+						if (error == null) {
+							this.closeTradeToast(result)
+						}
+					})
+					var claimedTrade = tradeNet.CloseTrade({_to: accounts[0]}, {fromBlock: "latest"})
+					claimedTrade.watch((error, result) => {
+						if (error == null) {
+							this.claimedTradeToast(result)
+						}
+					})
+		    	})
 		    })
 		})
   	}
+
+  	newTradeToast(result) {
+  		this.container.success(
+      		"Your trade has been deployed", {
+      		timeOut: 3000,
+      		extendedTimeOut: 3000,
+      		closeButton:true,
+    	});
+  	}
+
+  	closeTradeToast(result) {
+  		this.container.success(
+      		"Your trade has been claimed", {
+      		timeOut: 3000,
+      		extendedTimeOut: 3000,
+      		closeButton:true,
+    	});
+  	}
+
+  	claimedTradeToast(result) {
+  		this.container.success(
+      		"You claimed the trade", {
+      		timeOut: 3000,
+      		extendedTimeOut: 3000,
+      		closeButton:true,
+    	});
+   	}
 
   	deployToast(result) {
   		this.container.success(
