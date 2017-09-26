@@ -200,7 +200,7 @@ class Home extends Component {
 		        	<div className="logo-holder">
 			            <img src={Logo} className="logo" alt="logo" />
 			            <div className="home-header">Project <strong>ONYX</strong></div>
-			            <div className="home-subheader">(Alpha Build)</div>
+			            <div className="home-subheader">Alpha (Rinkeby TestNet)</div>
 			        </div>
 
 		        	<div className="pure-g">
