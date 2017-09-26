@@ -32,14 +32,17 @@ class ValidatorListener:
 	def new_validator(self):
 		if(not self.active):
 			stake = self.onyx.call().stake()
-			self.onyx.transact({"from":self.wallet}).approve(self.valnet_address, 0)
+			if(self.onyx.call({"from":self.wallet}).allowance(self.wallet, self.valnet_address) != 0):
+				self.onyx.transact({"from":self.wallet}).approve(self.valnet_address, 0)
 			if(self.onyx.call({"from":self.wallet}).allowance(self.wallet, self.valnet_address) == 0):
 				self.onyx.transact({"from":self.wallet}).approve(self.valnet_address, stake)
 
-			if(self.onyx.call({"from":self.wallet}).allowance(self.wallet, self.valnet_address) == stake):
-				self.val_net.transact({"from":self.wallet}).newValidator()
-			self.start_listener()
-			self.active = True
+			while(not self.active):
+				if(self.onyx.call({"from":self.wallet}).allowance(self.wallet, self.valnet_address) == stake):
+					print("newValidator")
+					self.val_net.transact({"from":self.wallet}).newValidator()
+					self.start_listener()
+					self.active = True
 
 	# Deletes the wallet address as an active validator
 	def delete_validator(self):

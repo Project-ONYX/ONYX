@@ -63,7 +63,6 @@ class SideBar extends Component {
 									</ul>
 								</div>
 							</li>
-							<li className="pure-menu-item"><a href="/Mint" className="pure-menu-link">Mint</a></li>
 							<li className="pure-menu-item"><a href="/Transfer" className="pure-menu-link">Trade ONYX</a></li>
 						</ul>
 					</div>
@@ -72,5 +71,7 @@ class SideBar extends Component {
 		)
 	}
 }
+
+// <li className="pure-menu-item"><a href="/Mint" className="pure-menu-link">Mint</a></li>
 
 export default onClickOutside(SideBar)

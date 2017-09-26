@@ -4,7 +4,7 @@ import { Switch, Route } from 'react-router-dom'
 import Requester from './Requester'
 import Engineer from './Engineer'
 import Home from './Home'
-import Mint from './Mint'
+// import Mint from './Mint'
 import Transfer from './Transfer'
 import Marketplace from './Marketplace'
 import Claims from './Claims'
@@ -19,12 +19,13 @@ class Main extends Component {
 		          <Route path='/Engineer' render={() =>  <Engineer />} />
 		          <Route path='/Marketplace' render={() => <Marketplace />} />
 		          <Route path='/Claims' render={() => <Claims />} />
-		          <Route exact path='/Mint' render={() =>      <Mint     web3={this.props.web3} Onyx={this.props.Onyx} />} />
 		          <Route exact path='/Transfer' render={() =>  <Transfer web3={this.props.web3} Onyx={this.props.Onyx} />} />
 		        </Switch>
 			</div>
 		)
 	}
 }
+
+// <Route exact path='/Mint' render={() =>      <Mint     web3={this.props.web3} Onyx={this.props.Onyx} />} />
 
 export default Main

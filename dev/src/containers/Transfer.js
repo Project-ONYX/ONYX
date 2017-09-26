@@ -126,13 +126,14 @@ class Transfer extends Component {
 		this.state.TradeNetwork.deployed().then((instance) => {
 			tradeNet = instance
 			tradeNet.newTrade(numONYX, numEther, {from: account}).then(() => {
-				this.setState({loading: false})
-				this.handleCloseModal()
+				
 			}).catch((e) => {
 				this.setState({loading: false})
 				console.log(e)
 				console.log("Trade was unsuccesful.")
 			})
+			this.setState({loading: false})
+			this.handleCloseModal()
 		})
 	}
 
@@ -259,7 +260,6 @@ class Transfer extends Component {
 					    </div>
 					</div>
 		      	</div>
-        		<DetailedTable classes="requester-table" table={table} />
 				<ReactModal 
        				isOpen={this.state.showModal}
        				contentLabel="Minimal Modal"

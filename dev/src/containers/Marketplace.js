@@ -100,12 +100,21 @@ class Marketplace extends Component {
 							onyx.approve(address, 0, {from: accounts[0]}).then(() => {
 								onyx.approve(address, stake, {from: accounts[0]}).then(() => {
 									this.claim(address, accounts[0])
+								}).catch(() => {
+									console.log("Approval Failed.")
+									this.setState({loading: false})
 								})
+							}).catch(() => {
+								console.log("Approval Failed.")
+								this.setState({loading: false})
 							})
 						}
 						else {
 							onyx.approve(address, stake, {from: accounts[0]}).then(() => {
 								this.claim(address, accounts[0])
+							}).catch(() => {
+								console.log("Approval Failed.")
+								this.setState({loading: false})
 							})
 						}
 					})

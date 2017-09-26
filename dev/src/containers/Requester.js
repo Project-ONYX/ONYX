@@ -167,6 +167,9 @@ class Requester extends Component {
 												this.setState({loading: false})
 											})
 										})
+									}).catch(() => {
+										console.log("Approval Failed.")
+										this.setState({loading: false})
 									})
 								}
 								else if(allowance === 0) {
@@ -178,6 +181,9 @@ class Requester extends Component {
 											console.log("Request Failed.")
 											this.setState({loading: false})
 										})
+									}).catch(() => {
+										console.log("Approval Failed.")
+										this.setState({loading: false})
 									})
 								}
 							})
