@@ -7,7 +7,7 @@ var ReqEngContractFactory = artifacts.require("./ReqEngContractFactory.sol");
 module.exports = function(deployer) {
   deployer.deploy(SafeMath);
   deployer.link(SafeMath, OnyxToken);
-  deployer.deploy(OnyxToken, 20, 20, 100, 1, 10).then(function() {
+  deployer.deploy(OnyxToken, 20, 20, 100, 1, 10*1000000000000000000).then(function() {
   	deployer.link(SafeMath, ValidatorNetwork);
   	return deployer.deploy(ValidatorNetwork, OnyxToken.address).then(function() {
   		deployer.link(SafeMath, ReqEngContractFactory);

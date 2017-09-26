@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import moment from 'moment'
 import axios from 'axios'
 import ReactModal from 'react-modal'
+import { BeatLoader } from 'react-spinners'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
@@ -22,7 +23,8 @@ class Claims extends Component {
 			validationUploadButtonName: "Select File",
 		  	showModal: false,
 		  	modalXHover: false,
-		  	currentContract: ""
+		  	currentContract: "",
+		  	loading: false
 		}
 
 		this.getEvents = this.getEvents.bind(this)
@@ -130,6 +132,10 @@ class Claims extends Component {
 	handleValidate(e) {
 		e.preventDefault()
 
+		if(this.state.loading) {
+			return
+		}
+
 		if(this.state.validationFile === "") {
 			console.log("No File")
 			return
@@ -141,13 +147,18 @@ class Claims extends Component {
 		var address = this.state.currentContract
 		axios.post('/api/files', formData).then((resp) => {
 			let id = resp.data.Id;
+			this.setState({loading: true})
 			var reContract
 			this.state.web3.eth.getAccounts((error, accounts) => {
 				this.state.REContract.at(address).then((instance) => {
 					reContract = instance
 					reContract.submit(id, {from: accounts[0]}).then(() => {
+						this.setState({loading: false})
 						this.handleCloseModal()
 						this.getEvents()
+					}).catch(() => {
+						console.log("Request failed.")
+						this.setState({loading: false})
 					})
 				})
 			})
@@ -220,10 +231,12 @@ class Claims extends Component {
 	}
 
 	handleCloseModal () {
-		this.setState({ validationFile: "" })
-		this.setState({ validationUploadButtonName: "Select File" })
-		this.setState({ showModal: false })
-		this.setState({ currentContract: "" })
+		if(this.state.loading === false) {
+			this.setState({ validationFile: "" })
+			this.setState({ validationUploadButtonName: "Select File" })
+			this.setState({ showModal: false })
+			this.setState({ currentContract: "" })
+		}
 	}
 
 	handleHover() {
@@ -237,10 +250,16 @@ class Claims extends Component {
 			data:this.state.tableData
 		}
 		var x_class = ""
+		var buttonText = ""
 		if(this.state.modalXHover) {
 			x_class = "fa fa-2x fa-times-circle modal-exit"
 		} else {
 			x_class = "fa fa-2x fa-times-circle-o modal-exit"
+		}
+		if(this.state.loading) {
+			buttonText = <BeatLoader color={'white'} loading={this.state.loading} />
+		} else {
+			buttonText = "Validate"
 		}
 		return(
 			<div>
@@ -263,7 +282,7 @@ class Claims extends Component {
 					<form className="pure-form pure-form-stacked requester-form" onSubmit={this.handleValidate }>
 						<input className="valUploadInput fileUpload" onChange={ (e) => {this.handleUpload(e.target.files)} } name='file' type="file" id="file" placeholder="Upload File" /> 
 						<label htmlFor="file" >{this.state.validationUploadButtonName}</label> 
-	 				   	<button className="button-xlarge pure-button validator-button">Validate</button>
+	 				   	<button className="button-xlarge pure-button validator-button">{buttonText}</button>
 					</form>
 					<div className="modal-bottom">
 					</div>

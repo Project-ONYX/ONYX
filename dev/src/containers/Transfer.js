@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import moment from 'moment'
 import getWeb3 from '../utils/getWeb3'
 import ReactModal from 'react-modal'
+import { BeatLoader } from 'react-spinners'
 import Header from '../components/Header'
 import DetailedTable from '../components/DetailedTable'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
@@ -19,7 +20,8 @@ class Transfer extends Component {
 		  	numSell: "",
 		  	priceSell: "",
 		  	showModal: false,
-			tableData: []
+			tableData: [],
+			loading: false
 		}
 
 		this.getEvents = this.getEvents.bind(this);
@@ -89,26 +91,28 @@ class Transfer extends Component {
 		var tradeNet
 		var allowance
 
+		this.setState({loading: true})
+
 		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Onyx.deployed().then((instance) => {
 				onyx = instance
 				this.state.TradeNetwork.deployed().then((instance) => {
 					tradeNet = instance
-					onyx.allowance.call(accounts[0], this.state.TradeNetwork.address).then((_allowance) => {
+					onyx.allowance.call(accounts[0], tradeNet.address).then((_allowance) => {
 		  				allowance = _allowance.toNumber()
 		  				if(allowance >= numONYX) {
-		  					this.newTrade(numONYX, numEther)
+		  					this.newTrade(numONYX, numEther, accounts[0])
 		  				}
 		  				else if(allowance > 0 && allowance < numONYX) {
-		  					onyx.approve(this.state.TradeNetwork.address, 0, {from: accounts[0]}).then(() => {
-		  						onyx.approve(this.state.TradeNetwork.address, numONYX, {from: accounts[0]}).then(() => {
-		  							this.newTrade(numONYX, numEther)
+		  					onyx.approve(tradeNet.address, 0, {from: accounts[0]}).then(() => {
+		  						onyx.approve(tradeNet.address, numONYX, {from: accounts[0]}).then(() => {
+		  							this.newTrade(numONYX, numEther, accounts[0])
 		  						})
 		  					})
 		  				}
 		  				else {
-				  			onyx.approve(this.state.TradeNetwork.address, numONYX, {from: accounts[0]}).then(() => {
-				  				this.newTrade(numONYX, numEther)
+				  			onyx.approve(tradeNet.address, numONYX, {from: accounts[0]}).then(() => {
+				  				this.newTrade(numONYX, numEther, accounts[0])
 							})
 		  				}
 		  			})
@@ -122,7 +126,12 @@ class Transfer extends Component {
 		this.state.TradeNetwork.deployed().then((instance) => {
 			tradeNet = instance
 			tradeNet.newTrade(numONYX, numEther, {from: account}).then(() => {
+				this.setState({loading: false})
 				this.handleCloseModal()
+			}).catch((e) => {
+				this.setState({loading: false})
+				console.log(e)
+				console.log("Trade was unsuccesful.")
 			})
 		})
 	}
@@ -219,10 +228,16 @@ class Transfer extends Component {
 
 	render() {
 		var x_class = ""
+		var button_text = ""
 		if(this.state.modalXHover) {
 			x_class = "fa fa-2x fa-times-circle modal-exit"
 		} else {
 			x_class = "fa fa-2x fa-times-circle-o modal-exit"
+		}
+		if(this.state.loading) {
+			button_text = <BeatLoader color={'white'} loading={this.state.loading} />
+		} else {
+			button_text = "Place Sell Order"
 		}
 		var headers = ["Price (ETH/ONYX)", "# ONYX"]
 		var table = {
@@ -261,9 +276,9 @@ class Transfer extends Component {
 						</div>
           			</div>
           			<form className="pure-form pure-form-stacked requester-form" onSubmit={this.handleSubmit}>
-				    	<input className="requester-form-entry" value={this.state.numSell} onChange={this.handleNumChange} id="name" placeholder="# ONYX" />
-				    	<input className="requester-form-entry" value={this.state.priceSell} onChange={this.handlePriceChange} id="strike_price" placeholder="Sell Price (ETH/ONYX)" />
-				    	<button className="button-xlarge pure-button transfer-button">Place Sell Order</button>
+				    	<input className="requester-form-entry" value={this.state.numSell} onChange={this.handleNumChange} disabled={this.state.loading} id="name" placeholder="# ONYX" />
+				    	<input className="requester-form-entry" value={this.state.priceSell} onChange={this.handlePriceChange} disabled={this.state.loading} id="strike_price" placeholder="Sell Price (ETH/ONYX)" />
+				    	<button className="button-xlarge pure-button transfer-button">{button_text}</button>
 					</form>
 					<div className="modal-bottom">
 					</div>

@@ -72,7 +72,7 @@ class Toaster extends Component {
 					  		this.reqValToast(result)
 						}
 					})
-					var deploy = factory.Deployed({_req: accounts[0]}, {fromBlock: "latest"})
+					var deploy = factory.NewContract({_req: accounts[0]}, {fromBlock: "latest"})
 					deploy.watch((error, result) => {
 						if (error == null) {
 					  		this.deployToast(result)
@@ -115,7 +115,7 @@ class Toaster extends Component {
 
   	newTradeToast(result) {
   		this.container.success(
-      		"Your trade has been deployed", {
+      		"Your trade has been deployed", "", {
       		timeOut: 3000,
       		extendedTimeOut: 3000,
       		closeButton:true,
@@ -124,7 +124,7 @@ class Toaster extends Component {
 
   	closeTradeToast(result) {
   		this.container.success(
-      		"Your trade has been claimed", {
+      		"Your trade has been claimed", "", {
       		timeOut: 3000,
       		extendedTimeOut: 3000,
       		closeButton:true,
@@ -133,7 +133,7 @@ class Toaster extends Component {
 
   	claimedTradeToast(result) {
   		this.container.success(
-      		"You claimed the trade", {
+      		"You claimed the trade", "", {
       		timeOut: 3000,
       		extendedTimeOut: 3000,
       		closeButton:true,

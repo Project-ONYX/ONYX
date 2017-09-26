@@ -59,7 +59,7 @@ class Deployed extends Component {
 				  		this.getEvents()
 					}
 				})
-				var deploy = factory.Deployed({_req: accounts[0]}, {fromBlock: "latest"})
+				var deploy = factory.NewContract({_req: accounts[0]}, {fromBlock: "latest"})
 				deploy.watch((error, result) => {
 					if (error == null) {
 				  		this.getEvents()
@@ -73,10 +73,11 @@ class Deployed extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Deployed({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+	 			let event = instance.NewContract({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map(log => {
+	  					console.log(log)
 	  					return [
 	  						log.args._contract,
 	  						log.args._name,

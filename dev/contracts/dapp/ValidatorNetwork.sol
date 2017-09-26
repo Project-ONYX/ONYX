@@ -24,7 +24,7 @@ contract ValidatorNetwork is Ownable {
     mapping(address => Validator) validators;
     mapping(uint256 => address) valList;
 
-    uint256 maxIndex = 0;
+    uint256 public maxIndex = 0;
 
     event RandNum(uint256 _val);
     event NewValidator(address indexed _val);

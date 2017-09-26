@@ -132,7 +132,7 @@ appears on the left side of the page.
     */
     #menu .pure-menu-selected,
     #menu .pure-menu-heading {
-        background: #232C42;
+        background: #2D2D2D;
     }
         /*
         This styles a link within a selected menu item `<li>`.
@@ -235,9 +235,12 @@ small screens.
     padding: 10px;
     background-color: #37BF7B;
     margin: -10px;
-    margin-top: 43px;
     height: 60px;
+    width: 300px;
     color: black;
+    position: absolute;
+    z-index: 1;
+    bottom: 10px;
 }
 
 .modal-exit {
@@ -255,7 +258,7 @@ small screens.
   position: relative;
   margin: 0 auto;
   width: 300px;
-  height: 400px;
+  height: 480px;
   background: #ccc;
   padding: 10px;
   border: 2px solid;

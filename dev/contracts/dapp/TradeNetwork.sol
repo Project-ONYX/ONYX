@@ -23,7 +23,7 @@ contract TradeNetwork is Ownable {
     }
 
     mapping(uint256 => Trade) trades;
-    uint256 indexCounter = 0;
+    uint256 public indexCounter = 0;
 
     event NewTrade(uint256 _id, address indexed _from, uint256 _amountONYX, uint256 _amountETH, uint256 _timestamp);
     event CloseTrade(uint256 _id, address indexed _from, address indexed _to, uint256 _amountONYX, uint256 _amountETH, uint256 _timestamp);

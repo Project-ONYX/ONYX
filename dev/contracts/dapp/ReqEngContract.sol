@@ -61,11 +61,10 @@ contract ReqEngContract is Ownable {
     /**
     * @dev Transfers stake and ether to be tranferred to the contract if approval is given
     */
-    function transferStake() onlyOwner isApproved payable returns (bool) {
-    	Onyx.transferFrom(msg.sender, this, stake);
+    function deploy() onlyOwner payable returns (bool) {
+        require(Onyx.balanceOf(this) == stake);
     	active = true;
     	Deployed(Requester, this.balance, dataHash, block.timestamp);
-        Factory.deployContract();
     	return active;
     }
 
@@ -85,15 +84,15 @@ contract ReqEngContract is Ownable {
         return validating;
     }
 
-    modifier isApproved() {
-    	require(Onyx.allowance(msg.sender, this) >= stake);
+    modifier isApproved(address addr) {
+    	require(Onyx.allowance(addr, this) >= stake);
     	_;
     }
 
     /**
     * @dev Claims the contract for an Engineer to work on
     */
-    function claim() isApproved returns (bool) {
+    function claim() isApproved(msg.sender) returns (bool) {
         require(active && !claimed);
         Onyx.transferFrom(msg.sender, this, stake);
 		Engineer = msg.sender;

@@ -130,7 +130,8 @@ module.exports = {
           // It enables caching results in ./node_modules/.cache/babel-loader/
           // directory for faster rebuilds.
           cacheDirectory: true,
-          presets: ['es2015']
+          presets: ['es2015'],
+          plugins: ["emotion"]
         }
       },
       // "postcss" loader applies autoprefixer to our CSS.

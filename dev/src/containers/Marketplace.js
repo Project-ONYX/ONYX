@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import moment from 'moment'
+import { BeatLoader } from 'react-spinners'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
@@ -17,7 +18,8 @@ class Marketplace extends Component {
 			Factory: "",
 			REContract: "",
 			searchValue: "",
-			tableData: []
+			tableData: [],
+			loading: false
 		}
 
 		this.getEvents = this.getEvents.bind(this)
@@ -64,7 +66,7 @@ class Marketplace extends Component {
 				  		this.getEvents()
 					}
 				})
-				var deploy = factory.Deployed({_req: accounts[0]}, {fromBlock: "latest"})
+				var deploy = factory.NewContract({_req: accounts[0]}, {fromBlock: "latest"})
 				deploy.watch((error, result) => {
 					if (error == null) {
 				  		this.getEvents()
@@ -82,6 +84,7 @@ class Marketplace extends Component {
 		var onyx
 		var stake
 		var allowance
+  		this.setState({loading: true})
 
 		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Onyx.deployed().then((instance) => {
@@ -115,6 +118,11 @@ class Marketplace extends Component {
 		this.state.REContract.at(address).then((instance) => {
 			instance.claim({from: account}).then(() => {
 				console.log("Claimed " + address)
+		  		this.setState({loading: false})
+		  		this.getEvents()
+			}).catch(() => {
+				console.log("Claim Failed.")
+				this.setState({loading: false})
 			})
 		})
   	}
@@ -122,7 +130,7 @@ class Marketplace extends Component {
   	getEvents(filterTerm) {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 	  		this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Deployed({}, {fromBlock: 0, toBlock: 'latest'})
+	 			let event = instance.NewContract({}, {fromBlock: 0, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map((log, index) => {
@@ -193,10 +201,16 @@ class Marketplace extends Component {
   	}
 
 	render() {
+		var loadingClasses = ""
 		var headers = ["Name", "Value"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
+		}
+		if(this.state.loading) {
+			loadingClasses = "loader-cover"
+		} else {
+			loadingClasses = "loader-cover hide"
 		}
 		return(
 			<main>
@@ -210,6 +224,7 @@ class Marketplace extends Component {
 							<button className="button pure-button pure-input-1-8 search-button" type="submit">Search</button>
 						</form>	
 					</div>
+					<div className={loadingClasses}><div className="covered-loader"><BeatLoader color={'white'} loading={this.state.loading} /></div></div>
 	        		<DetailedTable classes="requester-table" table={table} />
 				</div>
 	        </main>

@@ -57,9 +57,11 @@
     "babel-polyfill": "^6.26.0",
     "dotenv": "^2.0.0",
     "react": "^15.4.2",
+    "react-datepicker": "^0.55.0",
     "react-dom": "^15.4.2",
     "react-file-download": "^0.3.4",
     "react-router-dom": "^4.2.0",
+    "react-spinners": "^0.1.4",
     "react-toastr": "^2.9.3"
   },
   "scripts": {

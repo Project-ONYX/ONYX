@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import getWeb3 from '../utils/getWeb3'
 import ReactModal from 'react-modal'
+import { BeatLoader } from 'react-spinners'
+import DatePicker from 'react-datepicker';
 import axios from 'axios'
-import moment from 'moment'
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import ReqEngContract from '../../build/contracts/ReqEngContract.json'
@@ -10,6 +11,8 @@ import Header from '../components/Header'
 import Deployed from './Deployed'
 import InProgress from './InProgress'
 import Validated from './Validated'
+
+import 'react-datepicker/dist/react-datepicker.css';
 
 class Requester extends Component {
 	constructor(props) {
@@ -28,7 +31,8 @@ class Requester extends Component {
 		  	modalXHover: false,
 		  	inputButtonLabel: "Select File",
 		  	filePicked: false,
-		  	SecretValue: ""
+		  	SecretValue: "",
+		  	loading: false
 		}
 
 		this.handleNameChange = this.handleNameChange.bind(this);
@@ -78,16 +82,21 @@ class Requester extends Component {
 
 	handleOpenModal () {
 		this.setState({ showModal: true });
+		this.state.Factory.deployed().then((instance) => {
+			console.log(instance.address)
+		})
 	}
 
 	handleCloseModal () {
-		this.setState({nameValue: ""})
-		this.setState({deadlineValue: ""})
-		this.setState({EthValue: ""})
-		this.setState({filePicked: false})
-		this.setState({inputButtonLabel: "Select File"})
-		this.setState({showModal: false})
-		this.setState({SecretValue: ""})
+		if(this.state.loading === false) {
+			this.setState({nameValue: ""})
+			this.setState({deadlineValue: ""})
+			this.setState({EthValue: ""})
+			this.setState({filePicked: false})
+			this.setState({inputButtonLabel: "Select File"})
+			this.setState({showModal: false})
+			this.setState({SecretValue: ""})
+		}
 	}
 
 	handleHover() {
@@ -109,6 +118,15 @@ class Requester extends Component {
 	handleSubmit(event) {
 		event.preventDefault()
 
+		if(this.state.loading) {
+			return
+		}
+
+		if(isNaN(this.state.EthValue)) {
+			console.log("Ether Value not a number.")
+			return
+		}
+
 		var fileSelect = document.getElementById('file')
 		if(fileSelect.files.length === 0 || this.state.nameValue === "" || this.state.deadlineValue === "" || this.state.EthValue === "") {
 			return;
@@ -124,62 +142,54 @@ class Requester extends Component {
 			// Declaring this for later so we can chain functions on OnyxToken.
 			var factory
 			var onyx
-			var reContract
 			var stake
-			var address
 			var allowance
 
-			// Get accounts.
+			this.setState({loading: true})
+
 			this.state.web3.eth.getAccounts((error, accounts) => {
-			  this.state.Factory.deployed().then((instance) => {
-			    factory = instance
-			    // Get the value from the contract to prove it worked.
-			    return factory.newContract(this.state.web3.fromAscii(this.state.nameValue, 32), moment(this.state.deadlineValue).valueOf(), id, this.state.web3.sha3(this.state.SecretValue), {from: accounts[0]})
-			  }).then((addr) => {
-			  	address = addr.logs[0].args._contract
-			  	this.state.Onyx.deployed().then((instance) => {
-			  		onyx = instance
-			  		onyx.stake.call().then((_stake) => {
-			  			stake = _stake.toNumber()
-			  			onyx.allowance.call(accounts[0], address).then((_allowance) => {
-			  				allowance = _allowance.toNumber()
-			  				if(allowance >= stake) {
-			  					this.request(address, accounts[0])
-			  				}
-			  				else if(allowance > 0 && allowance < stake) {
-			  					onyx.approve(address, 0, {from: accounts[0]}).then(() => {
-			  						onyx.approve(address, stake, {from: accounts[0]}).then(() => {
-			  							this.request(address, accounts[0])
-			  						})
-			  					})
-			  				}
-			  				else {
-					  			onyx.approve(address, stake, {from: accounts[0]}).then(() => {
-					  				this.request(address, accounts[0])
-								})
-			  				}
-			  			})
+				this.state.Onyx.deployed().then((instance) => {
+					onyx = instance
+					this.state.Factory.deployed().then((instance) => {
+						factory = instance
+						onyx.stake.call().then((_stake) => {
+							stake = _stake.toNumber()
+							onyx.allowance.call(accounts[0], factory.address).then((_allowance) => {
+								allowance = _allowance.toNumber()
+								if(allowance > 0 && allowance < stake) {
+									onyx.approve(factory.address, 0, {from: accounts[0]}).then(() => {
+										onyx.approve(factory.address, stake, {from: accounts[0]}).then(() => {
+											factory.newContract.sendTransaction(this.state.web3.fromAscii(this.state.nameValue, 32), this.state.deadlineValue.valueOf(), id, this.state.web3.sha3(this.state.SecretValue), {from: accounts[0], value: this.state.web3.toWei(this.state.EthValue, 'ether')}).then(() => {
+    											this.setState({loading: false})
+    											this.handleCloseModal()												
+											}).catch(() => {
+												console.log("Request Failed.")
+												this.setState({loading: false})
+											})
+										})
+									})
+								}
+								else if(allowance === 0) {
+									onyx.approve(factory.address, stake, {from: accounts[0]}).then(() => {
+										factory.newContract.sendTransaction(this.state.web3.fromAscii(this.state.nameValue, 32), this.state.deadlineValue.valueOf(), id, this.state.web3.sha3(this.state.SecretValue), {from: accounts[0], value: this.state.web3.toWei(this.state.EthValue, 'ether')}).then(() => {
+   											this.setState({loading: false})
+											this.handleCloseModal()												
+										}).catch(() => {
+											console.log("Request Failed.")
+											this.setState({loading: false})
+										})
+									})
+								}
+							})
+						})
 					})
 				})
-			  })
-			})
-		}).catch(function(err) {
-			console.log(err);
-		})
-	}
-
-	request(address, account) {
-		var reContract
-		this.state.REContract.at(address).then((instance) => {
-			reContract = instance
-			reContract.transferStake.sendTransaction({from: account, value: this.state.web3.toWei(this.state.EthValue, 'ether')}).then(() => {
-				this.handleCloseModal()
 			})
 		})
 	}
 
 	handleDeadlineChange(event) {
-		this.setState({deadlineValue: event.target.value})
+		this.setState({deadlineValue: event})
 	}
 
 	handleEthChange(event) {
@@ -196,10 +206,16 @@ class Requester extends Component {
 
 	render() {
 		var x_class = ""
+		var button_text = ""
 		if(this.state.modalXHover) {
 			x_class = "fa fa-2x fa-times-circle modal-exit"
 		} else {
 			x_class = "fa fa-2x fa-times-circle-o modal-exit"
+		}
+		if(this.state.loading) {
+			button_text = <BeatLoader color={'white'} loading={this.state.loading} />
+		} else {
+			button_text = "Request Task"
 		}
 		return (
 	        <main>
@@ -237,12 +253,22 @@ class Requester extends Component {
 							</div>
 	          			</div>
 	          			<form className="pure-form pure-form-stacked requester-form" onSubmit={this.handleSubmit}>
-					    	<input className="requester-form-entry fileUpload" onChange={(e) => {this.handleFileChange(e.target.files)}} name='file' type="file" id="file" placeholder="Upload File" /><label htmlFor="file">{ this.state.inputButtonLabel }</label>
-					    	<input className="requester-form-entry" value={this.state.nameValue} onChange={this.handleNameChange} id="name" placeholder="Name" />
-					    	<input className="requester-form-entry" type="datetime-local" onChange={this.handleDeadlineChange} id="deadline" placeholder="Deadline" />
-					    	<input className="requester-form-entry" value={this.state.SecretValue} onChange={this.handleSecret} id="ether" placeholder="Secret Passphrase" />
-					    	<input className="requester-form-entry" value={this.state.EthValue} onChange={this.handleEthChange} id="ether" placeholder="ETH" />
-					    	<button className="button-xlarge pure-button requester-button">Request Task</button>
+					    	<input className="requester-form-entry fileUpload" onChange={(e) => {this.handleFileChange(e.target.files)}} disabled={this.state.loading} name='file' type="file" id="file" placeholder="Upload File" /><label htmlFor="file">{ this.state.inputButtonLabel }</label>
+					    	<input className="requester-form-entry" value={this.state.nameValue} onChange={this.handleNameChange} disabled={this.state.loading} id="name" placeholder="Name" />
+					    	<DatePicker
+					    		className="requester-form-entry"
+					    		placeholderText="Deadline"
+							    selected={this.state.deadlineValue}
+							    onChange={(e) => this.handleDeadlineChange(e) }
+							    showTimeSelect
+							    timeIntervals={60}
+							    dateFormat="LLL"
+							    disabled={this.state.loading}
+							/>
+					    	<input className="requester-form-entry" value={this.state.SecretValue} disabled={this.state.loading} onChange={this.handleSecret} id="secret" placeholder="Secret Passphrase" />
+					    	<input className="requester-form-entry" value={this.state.EthValue} disabled={this.state.loading} onChange={this.handleEthChange} id="ether" placeholder="ETH" />
+					    	<label>This may take a minute</label>
+					    	<button className="button-xlarge pure-button requester-button">{button_text}</button>
 						</form>
 						<div className="modal-bottom">
 						</div>

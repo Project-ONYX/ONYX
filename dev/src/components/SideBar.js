@@ -47,7 +47,7 @@ class SideBar extends Component {
 			    </a>
 				<div id="menu" className={this.state.active}>
 					<div className="pure-menu custom-restricted-width">
-						<a className="pure-menu-heading" href="/">Project ONYX</a>
+						<a className="pure-menu-heading" href="/">Project <strong>ONYX</strong></a>
 						<ul className="pure-menu-list">
 							<li className="pure-menu-item icon">
 								<i className="fa fa-5x fa-user-circle-o fa-user-icon" aria-hidden="true"></i>

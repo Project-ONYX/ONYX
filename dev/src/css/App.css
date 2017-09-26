@@ -97,9 +97,7 @@ code {
 }
 
 .home-container {
-  height: 60vh;
-  background-color: #232C42;
-  background-image: url("../../public/diagmonds.png");
+  background-color: #2D2D2D;
   text-align: center;
 }
 
@@ -114,14 +112,41 @@ code {
   margin-top: 1%;
 }
 
-.logo {
-  padding-top: 2em;
-  height: 50%;
+.home-header {
+  text-transform: uppercase;
+  font-size: 3em;
+  line-height: 1.5em;
+}
+
+.home-subheader {
+  font-size: 1.5em;
 }
 
 .logo-holder {
-  height: 100%;
+  padding: 2em 0 2em 0;
+}
+
+.stat-box {
   width: 100%;
+  padding: 2em 0 2em 0;
+}
+
+.stat-name {
+  font-size: 1.5em;
+  font-weight: bold;
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+.stat-data {
+  font-size: 3em;
+  padding-top: 1em;
+}
+
+.logo {
+  padding-top: 2em;
+  max-width: 80%;
+  width: 30em;
 }
 
 .icon {
@@ -144,11 +169,20 @@ code {
 }
 
 .requester-form-entry {
+  z-index: 10;
   text-align: center !important;
   margin: 0 auto !important;
   margin-bottom: 1em !important;
   width: 250px;
   color: black;
+}
+
+.react-datepicker-popper {
+  z-index: 10 !important;
+}
+
+.react-datepicker__time-list {
+  padding: 0 !important;
 }
 
 .requester-deploy-form-entry {
@@ -167,8 +201,9 @@ code {
   position: absolute;
   width: 300px;
   height: 60px;
+  z-index: 5;
   margin-left: -150px;
-  bottom: -50px;
+  bottom: 10px;
   background-color: #38bf7b;
 }
 
@@ -177,6 +212,7 @@ code {
   position: absolute;
   width: 300px;
   height: 60px;
+  z-index: 5;
   margin-left: -150px;
   bottom: 10px;
   background-color: #38bf7b;
@@ -187,6 +223,7 @@ code {
   position: absolute;
   width: 300px;
   height: 60px;
+  z-index: 5;
   margin-left: -150px;
   bottom: 10px;
   background-color: #38bf7b;
@@ -202,6 +239,28 @@ code {
   /*display: table;*/
   text-align: left;
   border: 1px solid #cbcbcb;
+}
+
+.loader-cover {
+  position: absolute;
+  width: 100vw;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  height: 100vh;
+  background-color: black;
+  opacity: 0.5;
+}
+
+.covered-loader {
+  position: fixed; 
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hide {
+  display: none;
 }
 
 .scrollable-rows {
