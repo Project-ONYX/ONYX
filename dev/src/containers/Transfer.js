@@ -84,6 +84,10 @@ class Transfer extends Component {
 	handleSubmit(event) {
 		event.preventDefault()
 
+		if(isNaN(this.state.numSell) || isNaN(this.state.priceSell)) {
+			return
+		}
+
 		var numONYX = this.state.web3.toWei(this.state.numSell, 'ether')
 		var numEther = this.state.priceSell*numONYX
 

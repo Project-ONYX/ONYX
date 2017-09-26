@@ -64,6 +64,7 @@ class SideBar extends Component {
 								</div>
 							</li>
 							<li className="pure-menu-item"><a href="/Transfer" className="pure-menu-link">Trade ONYX</a></li>
+							<li className="pure-menu-item"><a href="/Disclaimer" className="pure-menu-link">Disclaimer</a></li>
 						</ul>
 					</div>
 				</div>

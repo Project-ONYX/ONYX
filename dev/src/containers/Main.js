@@ -8,6 +8,7 @@ import Home from './Home'
 import Transfer from './Transfer'
 import Marketplace from './Marketplace'
 import Claims from './Claims'
+import Disclaimer from './Disclaimer'
 
 class Main extends Component {
 	render() {
@@ -19,6 +20,7 @@ class Main extends Component {
 		          <Route path='/Engineer' render={() =>  <Engineer />} />
 		          <Route path='/Marketplace' render={() => <Marketplace />} />
 		          <Route path='/Claims' render={() => <Claims />} />
+		          <Route path='/Disclaimer' render={() => <Disclaimer />} />
 		          <Route exact path='/Transfer' render={() =>  <Transfer web3={this.props.web3} Onyx={this.props.Onyx} />} />
 		        </Switch>
 			</div>

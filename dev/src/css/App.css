@@ -96,6 +96,11 @@ code {
   background-color: #E0E0E0;
 }
 
+.disclaimer-container {
+  padding: 4em 2em 4em 2em;
+  text-align: left;
+}
+
 .home-container {
   background-color: #2D2D2D;
   text-align: center;
@@ -435,6 +440,10 @@ code {
 }
 
 @media (min-width: 48em) {
+  .disclaimer-container {
+    padding: 10em;
+  }
+
   .button-zone {
     text-align: right;
   }
