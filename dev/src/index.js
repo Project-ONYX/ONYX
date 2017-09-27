@@ -4,14 +4,15 @@ import App from './containers/App';
 import { BrowserRouter, Route } from 'react-router-dom';
 import ReactGA from 'react-ga'
 
-ReactGA.initialize('UA-102272677-1', {
+ReactGA.initialize('UA-102272677-2', {
 	debug: true
 })
 
 function logPageView() {
-	ReactGA.set({ page: window.location })
-	ReactGA.pageview(window.location.pathName)
-	console.log("LOGGED: " + window.location)
+	var location = window.location.pathname
+	ReactGA.set({ page: location })
+	ReactGA.ga('send', 'pageview', location);
+	console.log("LOGGED Pathname: " + location)
 }
 
 ReactDOM.render((
