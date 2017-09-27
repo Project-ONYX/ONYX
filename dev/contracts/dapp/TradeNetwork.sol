@@ -45,8 +45,7 @@ contract TradeNetwork is Ownable {
     function newTrade(uint256 _amountONYX, uint256 _amountETH) isApproved(_amountONYX) returns (bool) {
         Onyx.transferFrom(msg.sender, this, _amountONYX);
         uint256 id = getId();
-        Trade memory trade = Trade(id, msg.sender, 0, _amountONYX, _amountETH, false, false);
-        trades[id] = trade;
+        trades[id] = Trade(id, msg.sender, 0, _amountONYX, _amountETH, false, false);
         NewTrade(id, msg.sender, _amountONYX, _amountETH, block.timestamp);
     }
 
