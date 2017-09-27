@@ -184,7 +184,6 @@ class Transfer extends Component {
 	 			let event = instance.NewTrade({}, {fromBlock: 0, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
-	  				console.log(logs)
 	  				var table = logs.map((log, index) => {
 	  					return [
 	  						log.args._id.toNumber(),
@@ -197,7 +196,6 @@ class Transfer extends Component {
 	  				})
 	  				let closeEvent = instance.CloseTrade({}, {fromBlock: 0, toBlock: 'latest'})
 		  			closeEvent.get((error, logs) => {
-		  				console.log(logs)
 		  				var closeTable = logs.map(log => {
 		  					return [
 		  						log.args._id,

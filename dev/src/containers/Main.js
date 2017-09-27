@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Router, Route, hashHistory } from 'react-router-dom'
+import { Route } from 'react-router-dom'
 
 import Requester from './Requester'
 import Engineer from './Engineer'
@@ -7,7 +7,6 @@ import Home from './Home'
 // import Mint from './Mint'
 import Transfer from './Transfer'
 import Marketplace from './Marketplace'
-import Claims from './Claims'
 import Disclaimer from './Disclaimer'
 
 class Main extends Component {

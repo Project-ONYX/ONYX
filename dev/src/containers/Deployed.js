@@ -77,7 +77,6 @@ class Deployed extends Component {
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map(log => {
-	  					console.log(log)
 	  					return [
 	  						log.args._contract,
 	  						log.args._name,
