@@ -8,6 +8,7 @@ import Home from './Home'
 import Transfer from './Transfer'
 import Marketplace from './Marketplace'
 import Disclaimer from './Disclaimer'
+// import Validator from './Validator'
 
 class Main extends Component {
 	render() {
@@ -23,7 +24,7 @@ class Main extends Component {
 		)
 	}
 }
-
+// <Route path='/Validator' render={() => <Validator />} />
 // <Route exact path='/Mint' render={() =>      <Mint     web3={this.props.web3} Onyx={this.props.Onyx} />} />
 
 export default Main

@@ -104,7 +104,7 @@ class ValidatorListener:
 
 	# Helper function to download files into the correct directory
 	def download_files(self, file_id):
-		url = "http://localhost:3001/api/files/" + str(file_id)
+		url = "https://alpha.projectonyx.io/api/files/" + str(file_id)
 		r = requests.get(url, allow_redirects=True)
 		fileName = self.download_path + str(file_id) + ".zip"
 		open(fileName, 'wb').write(r.content)

@@ -1,26 +1,29 @@
+import getWeb3 from '../utils/getWeb3'
 import React, { Component } from 'react'
-import moment from 'moment'
 import axios from 'axios'
 import ReactModal from 'react-modal'
 import { BeatLoader } from 'react-spinners'
-import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
-import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
-import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import DetailedTable from '../components/DetailedTable'
-import getWeb3 from '../utils/getWeb3'
 
-class Claims extends Component {
+import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
+import ValidatorNetworkContract from '../../build/contracts/ValidatorNetwork.json'
+import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
+import ReqEngContractContract from '../../build/contracts/ReqEngContract.json'
+
+class Validator extends Component {
 	constructor(props) {
 		super(props)
 
 		this.state = {
 			web3: "",
 			Onyx: "",
+			ValidatorNetwork: "",
 			Factory: "",
-			REContract: "",
+			ReqEngContract: "",
 			tableData: [],
 			validationFile: "",
 			validationUploadButtonName: "Select File",
+			PassPhrase: "",
 		  	showModal: false,
 		  	modalXHover: false,
 		  	currentContract: "",
@@ -28,8 +31,7 @@ class Claims extends Component {
 		}
 
 		this.getEvents = this.getEvents.bind(this)
-		this.handleDownload = this.handleDownload.bind(this)
-		this.handleUpload = this.handleUpload.bind(this)
+		this.handlePassPhraseChange = this.handlePassPhraseChange.bind(this)
 		this.handleValidate = this.handleValidate.bind(this)
 		this.handleOpenModal = this.handleOpenModal.bind(this)
 		this.handleCloseModal = this.handleCloseModal.bind(this)
@@ -55,111 +57,82 @@ class Claims extends Component {
   	instantiateContract() {
 	    const contract = require('truffle-contract')
 	    const Onyx = contract(OnyxTokenContract)
+	    const ValidatorNetwork = contract(ValidatorNetworkContract)
 	    const Factory = contract(ReqEngContractFactory)
-	    const REContract = contract(ReqEngContract)
+	    const ReqEngContract = contract(ReqEngContractContract)
 	    Onyx.setProvider(this.state.web3.currentProvider)
+	    ValidatorNetwork.setProvider(this.state.web3.currentProvider)
 	    Factory.setProvider(this.state.web3.currentProvider)
-	    REContract.setProvider(this.state.web3.currentProvider)
+	    ReqEngContract.setProvider(this.state.web3.currentProvider)
 	    this.setState({ Onyx: Onyx })
+	    this.setState({ ValidatorNetwork: ValidatorNetwork })
 	    this.setState({ Factory: Factory })
-	    this.setState({ REContract: REContract })
+	    this.setState({ ReqEngContract: ReqEngContract })
 
+	    var valNet
 	    var factory
 	    this.state.web3.eth.getAccounts((error, accounts) => {
-		    this.state.Factory.deployed().then((instance) => {
-		    	factory = instance
-				var claim = factory.Claimed({_eng: accounts[0]}, {fromBlock: "latest"})
-				claim.watch((error, result) => {
+		    this.state.ValidatorNetwork.deployed().then((instance) => {
+		    	valNet = instance
+				var job = valNet.Validate({_val: accounts[0]}, {fromBlock: "0"})
+				job.watch((error, result) => {
 					if (error == null) {
+						console.log(result)
 				  		this.getEvents()
+					} else {
+						console.log(error)
 					}
 				})
-				var val = factory.Validated({_eng: accounts[0]}, {fromBlock: "latest"})
-				val.watch((error, result) => {
+				var finish = valNet.Validated({}, {fromBlock: "0"})
+				finish.watch((error, result) => {
 					if (error == null) {
+						console.log("Validated!!!")
 				  		this.getEvents()
-					}
-				})
-				var fail = factory.Failed({_eng: accounts[0]}, {fromBlock: "latest"})
-				fail.watch((error, result) => {
-					if (error == null) {
-				  		this.getEvents()
+					} else {
+						console.log(error)
 					}
 				})
 		    })
+			this.state.Factory.deployed().then((instance) => {
+				factory = instance
+				var fail = factory.Failed({},{fromBlock: 0})
+				fail.watch((error, result) => {
+					if (error == null) {
+						console.log(result)
+					} else {
+						console.log(error)
+					}
+				})
+			})
+
 		})
 	    this.getEvents()
   	}
 
-	handleDownload(address, event) {
-		event.preventDefault()
-
-		var reContract
-
-		this.state.REContract.at(address).then((instance) => {
-			reContract = instance
-			reContract.dataHash.call().then((id) => {
-				console.log("ID: " + id);
-				setTimeout(() => {
-					const response = {
-						file: 'https://alpha.projectonyx.io/api/files/' + id
-					}
-					window.location.href = response.file;
-				}, 100);
-			})
-		})
+	handlePassPhraseChange(e) {
+		this.setState({PassPhrase: e.target.value})
 	}
 
-	handleUpload(files) {
-		var name = files[0].name
-		if(name.length > 15) {
-			name = name.slice(0, 15) + "..."
-		}
-
-		if(name === "") {
-			this.setState( { validationFile: "" } )
-			this.setState( { validationUploadButtonName: "Select File" }, () => {
-				this.getEvents()
-			} )
-		} else {
-			this.setState( { validationFile: files[0] } )
-			this.setState( { validationUploadButtonName: name }, () => {
-				this.getEvents()
-			}  )
-		}
-	}
-
-	handleValidate(e) {
+	handleValidate(e, address) {
 		e.preventDefault()
 
 		if(this.state.loading) {
 			return
 		}
 
-		if(this.state.validationFile === "") {
-			console.log("No File")
-			return
-		}
-
-		var formData = new FormData()
-		formData.append('file', this.state.validationFile, this.state.validationFile.name)
-
-		var address = this.state.currentContract
-		axios.post('/api/files', formData).then((resp) => {
-			let id = resp.data.Id;
-			this.setState({loading: true})
-			var reContract
-			this.state.web3.eth.getAccounts((error, accounts) => {
-				this.state.REContract.at(address).then((instance) => {
-					reContract = instance
-					reContract.submit(id, {from: accounts[0]}).then(() => {
-						this.setState({loading: false})
-						this.handleCloseModal()
-						this.getEvents()
-					}).catch(() => {
-						console.log("Request failed.")
-						this.setState({loading: false})
-					})
+		var reContract
+		this.state.web3.eth.getAccounts((error, accounts) => {
+			this.state.ReqEngContract.at(this.state.currentContract).then((instance) => {
+				reContract = instance
+				console.log(this.state.PassPhrase)
+				reContract.feedback(0, accounts[0], {from: accounts[0]}).then(() => {
+					console.log("Successful")
+					this.setState({loading: false})
+					this.handleCloseModal()
+					this.getEvents()
+				}).catch(() => {
+					console.log("Validate failed.")
+					this.setState({loading: false})
 				})
 			})
 		})
@@ -167,54 +140,43 @@ class Claims extends Component {
 
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
-			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Claimed({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+			this.state.ValidatorNetwork.deployed().then((instance) => {
+	 			let event = instance.Validate({_val: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map((log, index) => {
 	  					return [
-	  						log.args._contract, 
-	  						log.args._name,
-	  						moment(log.args._deadline.toNumber()).format("MM/DD/YYYY hh:mm:ss A"),
-	  						log.args._req, 
-	  						this.state.web3.fromWei(log.args.value.toNumber(), "ether"),
-	  						<button className="button pure-button" onClick={ (e) => this.handleDownload(log.args._contract, e) }>Download</button>,
-  							<button className="pure-button button" onClick={(e) => this.handleOpenModal(log.args._contract)}>Validate</button>
+	  						log.args._val, 
+	  						log.args._dataHash,
+	  						log.args._job, 
+  							<button className="pure-button button" onClick={(e) => this.handleOpenModal(log.args._job)}>Validate</button>
 	  					]
 	  				})
 
-				    let valEvent = instance.Validated({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+				    let valEvent = instance.Validated({_val: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
 				    valEvent.get((error, logs) => {
 	  					var valTable = logs.map(log => {
 	  						return [
-	  							log.args._contract,
-	  							log.args._name,
+	  							log.args._val,
+	  							log.args._job
 	  						]
 	  					})
 	  					valTable = valTable.reduce((result, filter) => {
-	  						result[filter[0]] = filter;
+	  						result[filter[1]] = filter;
 	  						return result;
 	  					},{})
 	  					table = table.filter(entry => {
-	  						if(entry[0] in valTable) {
+	  						if(entry[1] in valTable) {
 	  							return false
 	  						}
 	  						return true
 	  					})
 	  					table = table.map(log => {
-	  						log[0] = log[0].slice(0,20) + "..."
-	  						log[3] = log[3].slice(0,20) + "..."
-	  						log[1] = this.state.web3.toAscii(log[1].replace(/0+$/g, ""))
-	  						if(log[1].length > 23) {
-	  							log[1] = log[1].slice(0,20) + "..."
-	  						}
-	  						var output_map = {"headers":[log[1], log[4] + " ETH"], "vals":[
-	  							{"contract": log[0]},
-	  							{"requester": log[3]},
-	  							{"deadline": log[2]},
-	  							{"value": log[4] + " ETH"},
-	  							{"Download": log[5]},
-	  							{"Validate": log[6]}
+	  						var output_map = {"headers":[log[2], log[1]], "vals":[
+	  							{"validator": log[0]},
+	  							{"dataHash": log[1]},
+	  							{"jobContract": log[2]},
+	  							{"Validate": log[3]}
 	  						]}
 	  						return output_map
 	  					})
@@ -244,7 +206,7 @@ class Claims extends Component {
 	}
 
 	render() {
-		var headers = ["Claimed"]
+		var headers = ["Job", "DataHash"]
 		var table = {
 			headers:headers,
 			data:this.state.tableData
@@ -280,8 +242,7 @@ class Claims extends Component {
 						</div>
 					</div>
 					<form className="pure-form pure-form-stacked requester-form" onSubmit={this.handleValidate }>
-						<input className="valUploadInput fileUpload" onChange={ (e) => {this.handleUpload(e.target.files)} } name='file' type="file" id="file" placeholder="Upload File" /> 
-						<label htmlFor="file" >{this.state.validationUploadButtonName}</label> 
+						<input className="requester-form-entry" value={this.state.PassPhrase} onChange={this.handlePassPhraseChange} disabled={this.state.loading} id="name" placeholder="PassPhrase" />
 	 				   	<button className="button-xlarge pure-button validator-button">{buttonText}</button>
 					</form>
 					<div className="modal-bottom">
@@ -292,4 +253,4 @@ class Claims extends Component {
 	}
 }
 
-export default Claims
+export default Validator
