@@ -12,7 +12,7 @@ var FileSchema = require('../src/model/FileSchema');
 const PORT = 3001;
 
 var router = express.Router();
-mongoose.connect('192.241.174.202','onyx');
+mongoose.connect('localhost','onyx');
 var app = express();
 
 mongoose.connection.on('open', function() {
