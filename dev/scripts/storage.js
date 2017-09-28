@@ -31,6 +31,7 @@ mongoose.connection.on('open', function() {
 			if(err) {
 				res.send(err);
 			} else {
+				res.setHeader('Content-Disposition', 'attachment; filename=task.zip');
 				res.end(file.file.data)
 			}
 		});
