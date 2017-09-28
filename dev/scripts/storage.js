@@ -30,24 +30,9 @@ mongoose.connection.on('open', function() {
 		FileSchema.findOne({id: (req.params.id)}, function(err, file){
 			if(err) {
 				res.send(err);
+			} else {
+				res.end(file.file.data)
 			}
-			temp.track();
-			temp.open({suffix: ".zip"}, function(err, info) {
-				if(err) {
-					return console.log(err);
-				}
-				fs.write(info.fd, file.file.data, function(err) {
-					if(err) {
-						return console.log(err);
-					}
-					fs.close(info.fd, function(err) {
-						if(err) {
-							return console.log(err);
-						}
-						res.sendFile(info.path);
-					});
-				});
-			});
 		});
 	});
 
