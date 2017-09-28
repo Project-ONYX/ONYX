@@ -105,7 +105,7 @@ class Claims extends Component {
 						file: 'https://alpha.projectonyx.io/api/files/' + id
 					}
 					window.location.href = response.file;
-				}, 100);
+				}, 5);
 			})
 		})
 	}
