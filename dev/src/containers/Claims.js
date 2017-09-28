@@ -168,8 +168,9 @@ class Claims extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Claimed({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+	 			let event = instance.Claimed({_eng: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
 	  			event.get((error, logs) => {
+	  				console.log(logs)
 	  				logs.reverse()
 	  				var table = logs.map((log, index) => {
 	  					return [
@@ -183,8 +184,9 @@ class Claims extends Component {
 	  					]
 	  				})
 
-				    let valEvent = instance.Validated({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+				    let valEvent = instance.Validated({_eng: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
 				    valEvent.get((error, logs) => {
+				    	console.log(logs)
 	  					var valTable = logs.map(log => {
 	  						return [
 	  							log.args._contract,

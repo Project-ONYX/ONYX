@@ -100,7 +100,7 @@ class Pending extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 	  		this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.NewContract({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+	 			let event = instance.NewContract({_req: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				var i = 0
 	  				var table = logs.map(log => {
@@ -117,7 +117,7 @@ class Pending extends Component {
 		  					</form>
 	  					]
 	  				})
-	  				let deployEvent = instance.Deployed({_req: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+	  				let deployEvent = instance.Deployed({_req: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
 		  			deployEvent.get((error, logs) => {
 		  				var j = 0
 		  				var deployTable = logs.map(log => {

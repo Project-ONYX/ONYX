@@ -100,9 +100,10 @@ class Completed extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-				let event = instance.Validated({_eng: accounts[0]}, {fromBlock: 0, toBlock: 'latest'})
+				let event = instance.Validated({_eng: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
 			    event.get((error, logs) => {
 			    	logs.reverse()
+			    	console.log(logs)
   					var table = logs.map(log => {
   						return [
   							log.args._contract,

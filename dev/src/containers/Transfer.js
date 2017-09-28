@@ -181,7 +181,7 @@ class Transfer extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 	  		this.state.TradeNetwork.deployed().then((instance) => {
-	 			let event = instance.NewTrade({}, {fromBlock: 0, toBlock: 'latest'})
+	 			let event = instance.NewTrade({}, {fromBlock: 960000, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map((log, index) => {
@@ -194,7 +194,7 @@ class Transfer extends Component {
 	  						<button className="button pure-button" onClick={(e) => this.handleTrade(log.args._id, log.args._amountETH, accounts[0], e)}>Trade</button>
 	  					]
 	  				})
-	  				let closeEvent = instance.CloseTrade({}, {fromBlock: 0, toBlock: 'latest'})
+	  				let closeEvent = instance.CloseTrade({}, {fromBlock: 960000, toBlock: 'latest'})
 		  			closeEvent.get((error, logs) => {
 		  				var closeTable = logs.map(log => {
 		  					return [
