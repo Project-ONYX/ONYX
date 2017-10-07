@@ -1,17 +1,25 @@
 # ProjectONYX
 Distributed Test Driven Software Development built on the Ethereum blockchain
 
+# Websites
+[Landing Page](https://projectonyx.io)
+[Alpha](https://alpha.projectonyx.io)
+
 # Directory Structure
 
 * README.md
 * dapp --> Truffle dapp directory.
 	* contracts --> All smart contract code
+		* dapp --> Smart contracts to build out dapp pieces
+		* crowdsale --> Smart contracts to specify crowdsale
+		* lib --> libraries
+		* token --> Smart contracts to build ONYX token
 	* src --> All front-end code that hooks into the smart contracts
 	* test --> Test suite for all code
 * validator --> Python code to start own instance of a validator (very alpha)
 	* README.md --> Instructions for starting validator instance
 	* src --> All validator python code
-* demos --> TDD demos to help you get started with the ecosystem
+* demos --> TDD demos to help you run through the process on the alpha
 
 # What is Project ONYX
 
