@@ -2,8 +2,8 @@
 Distributed Test Driven Software Development built on the Ethereum blockchain
 
 # Websites
-[Landing Page](https://projectonyx.io)
-[Alpha](https://alpha.projectonyx.io)
+[Landing Page](https://projectonyx.io)  
+[Alpha](https://alpha.projectonyx.io)  
 
 # Directory Structure
 
