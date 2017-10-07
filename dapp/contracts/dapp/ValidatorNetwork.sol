@@ -6,7 +6,7 @@ import './ReqEngContract.sol';
 
 /**
  * @title ValidatorNetwork
- * @dev Creates and manages the validator network
+ * @dev Creates and manages the network of validators guaranteeing code correctness
  */
 contract ValidatorNetwork is Ownable {
     using SafeMath for uint256;
@@ -47,10 +47,16 @@ contract ValidatorNetwork is Ownable {
         _;
     }
 
+    /**
+    * @dev Updates the stake from the ONYX tokens contract
+    */
     function updateStake() returns (bool) {
         stake = Onyx.stake();
     }
 
+    /**
+    * @dev Function called to register a new validator
+    */
     function newValidator() isApproved returns (bool) {
         if(validators[msg.sender].init == false) {
             Onyx.transferFrom(msg.sender, this, stake);
@@ -64,6 +70,9 @@ contract ValidatorNetwork is Ownable {
         }
     }
 
+    /**
+    * @dev Function called to decomission a validator
+    */
     function deleteValidator() returns (bool) {
         if(validators[msg.sender].init == true) {
             Onyx.transfer(msg.sender, stake);
@@ -86,6 +95,10 @@ contract ValidatorNetwork is Ownable {
         }
     }
 
+    /**
+    * @dev Returns if an account is an active validator
+    * @param _addr address to be checked
+    */
     function amValidator(address _addr) constant returns (bool) {
         if(validators[_addr].init == true) {
             return true;
@@ -94,12 +107,19 @@ contract ValidatorNetwork is Ownable {
         }
     }
 
+    /**
+    * @dev Generates a PRN using block timestamp
+    */
     function getRandomValidator() constant returns (address) {
         uint256 randNum = uint256(sha3(block.timestamp))%maxIndex;
         RandNum(randNum);
         return valList[randNum];
     }
 
+    /**
+    * @dev Validates code from an engineer by assigning to a random validator
+    * @param _dataHash Hash that represents location of code to be validated (storage agnostic)
+    */
     function validate(string _dataHash) returns (address) {
         address randomValidatorAddress = getRandomValidator();
         Validator randomValidator = validators[randomValidatorAddress];
@@ -108,6 +128,10 @@ contract ValidatorNetwork is Ownable {
         return randomValidatorAddress;
     }
 
+    /**
+    * @dev Finishes the validation and relays message to original requester contract
+    * @param _passPhrase pass phrase returned from the testing suite that is hashed and relayed to original contract to confirm success
+    */
     function endValidation(string _passPhrase) returns (bool) {
         ReqEngContract reqContract = ReqEngContract(validators[msg.sender].currentAssignment);
         Validated(msg.sender, validators[msg.sender].currentAssignment);

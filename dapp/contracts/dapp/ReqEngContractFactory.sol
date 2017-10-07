@@ -7,9 +7,9 @@ import '../token/OnyxToken.sol';
 
 /**
  * @title ReqEngContractFactory
- * @dev Smart Contract in charge of dealing with
- * the transaction between a requester and engineer.
- * Handles 
+ * @dev Smart Contract in charge of dealing with the contracts
+ * generated between a requester and engineer. Serves as central event
+ * transmitter to be listened to.
  */
 contract ReqEngContractFactory {
     using SafeMath for uint256;
@@ -35,10 +35,16 @@ contract ReqEngContractFactory {
         _;
     }
 
+    /**
+    * @dev Inits a new ReqEngContract to represent a new request
+    * @param _name job name
+    * @param _deadline job deadline in unix time
+    * @param _dataHash hash for the storage location of the starter code/setup
+    * @param _secretHash hashed passcode value that is used as confirmation of validator success
+    */
     function newContract(bytes32 _name, uint256 _deadline, string _dataHash, bytes32 _secretHash) isApproved(msg.sender) payable returns (address) {
         address req = msg.sender;
         address contractAddr = new ReqEngContract(req, onyx, valNet, this, _name, _deadline, _dataHash, _secretHash);
-        // address contractAddr = req;
         OnyxToken(onyx).transferFrom(req, contractAddr, OnyxToken(onyx).stake());
         ReqEngContract(contractAddr).deploy.value(msg.value)();
         ReqEngContract(contractAddr).transferOwnership(req);
@@ -48,6 +54,9 @@ contract ReqEngContractFactory {
         return contractAddr;
     }
 
+    /**
+    * @dev Acts as an event emitter to emit Claimed event for front end
+    */
     function claimContract() returns (bool) {
         address _contract = msg.sender;        
         require(outstandingContracts[_contract] > 0);  
@@ -56,6 +65,10 @@ contract ReqEngContractFactory {
         return true;
     }
 
+    /**
+    * @dev Acts as an event emitter to emit the Validated event for front end.
+    *      Also decrements contract counter for the account.
+    */
     function validateContract() returns (bool) {
         address _contract = msg.sender;
         require(outstandingContracts[_contract] > 0);
@@ -66,6 +79,9 @@ contract ReqEngContractFactory {
         return true;
     }
 
+    /**
+    * @dev Acts as an event emitter to emit the Failed event for front end
+    */
     function failContract() returns (bool) {
         address _contract = msg.sender;
         require(outstandingContracts[_contract] > 0);
@@ -74,6 +90,10 @@ contract ReqEngContractFactory {
         return true;
     }
 
+    /**
+    * @dev Acts as an event emitter to emit the Deadlined event for front end.
+    *      Also decrements contract counter for the account.
+    */
     function deadlineContract() returns (bool) {
         address _contract = msg.sender;
         require(outstandingContracts[_contract] > 0);

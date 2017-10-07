@@ -4,7 +4,7 @@ Python scripts responsible for automatically querying the Ethereum blockchain an
 To boot validator:
 ```
 	> cd src
-	> python validator_listener.py --valnet_address <VALNET_ADDRESS FOUND ON ALPHA> --wallet_address <UNLOCKED WALLET>
+	> python validator_listener.py --valnet_address 0x0868ec3321591985692c38ce007b68afdd01dc66 --wallet_address <UNLOCKED WALLET>
 		<Shell should appear>
 ```
 

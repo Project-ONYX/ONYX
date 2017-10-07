@@ -10,7 +10,6 @@ import './ReqEngContractFactory.sol';
  * @title ReqEngContract
  * @dev Smart Contract in charge of dealing with
  * the transaction between a requester and engineer.
- * Handles 
  */
 contract ReqEngContract is Ownable {
     using SafeMath for uint256;
@@ -102,8 +101,11 @@ contract ReqEngContract is Ownable {
 		return true;
     }
 
+    /**
+    * @dev Submit engineer code to validator
+    * @param _dataHash hash to the location of the code (hash could be for IPFS or Mongo, it is storage agnostic)
+    */
     function submit(string _dataHash) returns (bool) {
-    	// TODO: Send the code to the validate function
         require(claimed && active && msg.sender == Engineer);
         if(validating == false) {
             validating = true;
@@ -113,6 +115,9 @@ contract ReqEngContract is Ownable {
         return validating;
     }
 
+    /**
+    * @dev Call deadline for contract by the Requester
+    */
     function callDeadline() onlyOwner returns (bool) {
         require(block.timestamp >= deadline && validating == false);
         if(active) {
@@ -127,6 +132,11 @@ contract ReqEngContract is Ownable {
         return true;
     }
 
+    /**
+    * @dev Function validator calls to give feedback to engineer
+    * @param _passPhrase sha3 of passphrase passed from validator script (only called from validatorNetwork contract)
+    * @param _validator address of the validator who did the work
+    */
     function feedback(bytes32 _passPhrase, address _validator) returns (bool) {
         Validator = _validator;
     	if(secretHash == _passPhrase) {

@@ -42,6 +42,11 @@ contract TradeNetwork is Ownable {
         _;
     }
 
+    /**
+    * @dev Inserts a new trade onto the trade market
+    * @param _amountONYX the amount of ONYX tokens the user wants to trade
+    * @param _amountETH the amount of ETH the user wants in exchange
+    */
     function newTrade(uint256 _amountONYX, uint256 _amountETH) isApproved(_amountONYX) returns (bool) {
         Onyx.transferFrom(msg.sender, this, _amountONYX);
         uint256 id = getId();
@@ -49,6 +54,10 @@ contract TradeNetwork is Ownable {
         NewTrade(id, msg.sender, _amountONYX, _amountETH, block.timestamp);
     }
 
+    /**
+    * @dev Cancels a trade on the trade market
+    * @param _id the id of the trade to be canceled (must be the requesting account's trade)
+    */
     function cancelTrade(uint256 _id) isOpenTrade(_id) returns (bool) {
         require(trades[_id].from == msg.sender);
         Onyx.transfer(msg.sender, trades[_id].amountONYX);
@@ -56,6 +65,10 @@ contract TradeNetwork is Ownable {
         CloseTrade(_id, msg.sender, 0, trades[_id].amountONYX, trades[_id].amountETH, block.timestamp);
     }
 
+    /**
+    * @dev Claims an open trade and pays ETH to other party to receive ONYX tokens
+    * @param _id the id of the trade to be claimed (must not be the requesting account's trade)
+    */
     function claimTrade(uint256 _id) payable isOpenTrade(_id) returns (bool) {
         require(trades[_id].from != msg.sender && trades[_id].amountETH == msg.value);
         Onyx.transfer(msg.sender, trades[_id].amountONYX);
@@ -64,6 +77,9 @@ contract TradeNetwork is Ownable {
         CloseTrade(_id, trades[_id].from, msg.sender, trades[_id].amountONYX, trades[_id].amountETH, block.timestamp);
     }
 
+    /**
+    * @dev Helper function to generate incrementing id
+    */
     function getId() returns (uint256) {
         indexCounter = indexCounter.add(1);
         return indexCounter;
