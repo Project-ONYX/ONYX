@@ -9,6 +9,8 @@ Distributed Test Driven Software Development built on the Ethereum blockchain
 	* src --> All front-end code that hooks into the smart contracts
 	* test --> Test suite for all code
 * validator --> Python code to start own instance of a validator (very alpha)
+	* README.md --> Instructions for starting validator instance
+	* src --> All validator python code
 * demos --> TDD demos to help you get started with the ecosystem
 
 # What is Project ONYX
