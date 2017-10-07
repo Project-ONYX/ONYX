@@ -1,7 +1,6 @@
 pragma solidity ^0.4.11;
 
 import '../lib/math/SafeMath.sol';
-import '../lib/Ownable.sol';
 import './RefundVault.sol';
 import '../token/OnyxToken.sol';
 
@@ -12,16 +11,14 @@ import '../token/OnyxToken.sol';
 * and forwarding it if crowdsale is successful. Also supports the
 * releasing of funds in chunks according to a timer.
 */
-contract MilestoneVault is RefundVault, Ownable {
+contract MilestoneVault is RefundVault {
     using SafeMath for uint256;
-
-    enum State { Active, Refunding, Closed }
 
     mapping (address => uint256) public deposited;
     address public wallet;
     OnyxToken public token;
     State public state;
-    FundingLevels public completedFundingState;
+    uint public completedFundingState;
     uint256 public totalBalance;
     uint256 public extractedBalance;
 
@@ -31,22 +28,22 @@ contract MilestoneVault is RefundVault, Ownable {
     }
 
     Level[4] levels;
-    levels[0] = Level(0, 0);
-    levels[1] = Level(50, 0);
-    levels[2] = Level(75, 1000000); // Init with block offsets, go ing for 6 months
-    levels[3] = Level(100, 2000000);
 
     event Milestone(uint level);
     event Closed();
     event RefundsEnabled();
     event Refunded(address indexed beneficiary, uint256 weiAmount);
 
-    function MilestoneVault(address _wallet, address _token) {
+    function MilestoneVault(address _wallet, address _token) RefundVault(_wallet) {
         require(_wallet != 0x0);
         wallet = _wallet;
         token = OnyxToken(_token);
         state = State.Active;
         completedFundingState = 0;
+        levels[0] = Level(0, 0);
+        levels[1] = Level(50, 0);
+        levels[2] = Level(75, 1000000); // Init with block offsets, go ing for 6 months
+        levels[3] = Level(100, 2000000);
     }
 
     function deposit(address investor) onlyOwner payable {
@@ -82,7 +79,7 @@ contract MilestoneVault is RefundVault, Ownable {
         require(state == State.Closed);
         uint currentLevel = getCurrentMilestone();
         if(currentLevel > completedFundingState) {
-            uint256 removableFunds = totalBalance.mul(levels[currentLevel].div(100)).sub(extractedBalance);
+            uint256 removableFunds = totalBalance.mul(levels[currentLevel].percentRelease.div(100)).sub(extractedBalance);
             require(removableFunds <= this.balance);
             wallet.transfer(removableFunds);
             extractedBalance = extractedBalance.add(removableFunds);

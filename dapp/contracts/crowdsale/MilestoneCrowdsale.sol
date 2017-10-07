@@ -5,12 +5,12 @@ import './FinalizableCrowdsale.sol';
 import './MilestoneVault.sol';
 
 /**
-* @title RefundableCrowdsale
+* @title MilestoneCrowdsale
 * @dev Extension of Crowdsale contract that adds a funding goal, and
 * the possibility of users getting a refund if goal is not met.
 * Uses a RefundVault as the crowdsale's vault.
 */
-contract RefundableCrowdsale is FinalizableCrowdsale {
+contract MilestoneCrowdsale is FinalizableCrowdsale {
     using SafeMath for uint256;
 
     // minimum amount of funds to be raised in weis
@@ -19,7 +19,7 @@ contract RefundableCrowdsale is FinalizableCrowdsale {
     // refund vault used to hold funds while crowdsale is running
     RefundVault public vault;
 
-    function RefundableCrowdsale(uint256 _goal, uint256 _startBlock, uint256 _endBlock, uint256 _rate, address _wallet) FinalizableCrowdsale(_startBlock, _endBlock, _rate, _wallet) {
+    function MilestoneCrowdsale(uint256 _goal, uint256 _startBlock, uint256 _endBlock, uint256 _rate, address _wallet) FinalizableCrowdsale(_startBlock, _endBlock, _rate, _wallet) {
         require(_goal > 0);
         vault = new MilestoneVault(wallet, address(token));
         goal = _goal;
