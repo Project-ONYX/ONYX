@@ -152,7 +152,7 @@ class Marketplace extends Component {
 	  						<button className="button pure-button" onClick={(e) => this.handleClaim(log.args._contract, e)}>Claim</button>
 	  					]
 	  				})
-	  				let claimEvent = instance.Claimed({_eng: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+	  				let claimEvent = instance.Claimed({}, {fromBlock: 960000, toBlock: 'latest'})
 		  			claimEvent.get((error, logs) => {
 		  				var claimTable = logs.map(log => {
 		  					return [
