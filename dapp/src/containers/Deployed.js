@@ -6,6 +6,8 @@ import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import DetailedTable from '../components/DetailedTable'
 import getWeb3 from '../utils/getWeb3'
 
+var START_BLOCK = 0 //960000
+
 class Deployed extends Component {
 	constructor(props) {
 		super(props)
@@ -73,7 +75,7 @@ class Deployed extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.NewContract({_req: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+	 			let event = instance.NewContract({_req: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map(log => {
@@ -85,7 +87,7 @@ class Deployed extends Component {
 	  					]
 	  				})
 	  				
-	  				let claimEvent = instance.Claimed({_req: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+	  				let claimEvent = instance.Claimed({_req: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  				claimEvent.get((error, logs) => {
 	  					var claimTable = logs.map(log => {
 	  						return [

@@ -10,6 +10,8 @@ import ValidatorNetworkContract from '../../build/contracts/ValidatorNetwork.jso
 import ReqEngContractFactory from '../../build/contracts/ReqEngContractFactory.json'
 import ReqEngContractContract from '../../build/contracts/ReqEngContract.json'
 
+var START_BLOCK = 0 //960000
+
 class Validator extends Component {
 	constructor(props) {
 		super(props)
@@ -95,7 +97,7 @@ class Validator extends Component {
 		    })
 			this.state.Factory.deployed().then((instance) => {
 				factory = instance
-				var fail = factory.Failed({},{fromBlock: 960000})
+				var fail = factory.Failed({},{fromBlock: START_BLOCK})
 				fail.watch((error, result) => {
 					if (error == null) {
 						console.log(result)
@@ -141,7 +143,7 @@ class Validator extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.ValidatorNetwork.deployed().then((instance) => {
-	 			let event = instance.Validate({_val: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+	 			let event = instance.Validate({_val: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map((log, index) => {
@@ -153,7 +155,7 @@ class Validator extends Component {
 	  					]
 	  				})
 
-				    let valEvent = instance.Validated({_val: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+				    let valEvent = instance.Validated({_val: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 				    valEvent.get((error, logs) => {
 	  					var valTable = logs.map(log => {
 	  						return [

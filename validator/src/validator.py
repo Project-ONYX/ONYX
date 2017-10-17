@@ -20,4 +20,6 @@ class Validator:
             f.close()
         except CalledProcessError as e:
             result_key = e.output.decode('utf-8')
+        except e:
+            result_key = e.output.decode('utf-8')
         return result_key

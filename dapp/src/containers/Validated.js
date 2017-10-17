@@ -6,6 +6,8 @@ import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import DetailedTable from '../components/DetailedTable'
 import getWeb3 from '../utils/getWeb3'
 
+var START_BLOCK = 0 //960000
+
 class Validated extends Component {
 	constructor(props) {
 		super(props)
@@ -67,7 +69,7 @@ class Validated extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Validated({_req: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+	 			let event = instance.Validated({_req: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map(log => {

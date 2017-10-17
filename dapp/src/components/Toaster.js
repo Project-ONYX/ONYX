@@ -5,6 +5,8 @@ import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import TradeNetworkContract from '../../build/contracts/TradeNetwork.json'
 import getWeb3 from '../utils/getWeb3'
 
+var START_BLOCK = 0 //960000
+
 var ReactToastr = require("react-toastr");
 var {ToastContainer} = ReactToastr;
 

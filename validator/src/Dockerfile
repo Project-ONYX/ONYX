@@ -17,4 +17,4 @@ EXPOSE 80
 ENV NAME World
 
 # Run app.py when the container launches
-CMD ["python", "validator_listener.py"]
+CMD ["python", "validator_listener.py", "--valnet_address", "0xc32f75fe6e5a476bd8550645dbd89711fc53fab1"]

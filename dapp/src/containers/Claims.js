@@ -9,6 +9,8 @@ import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import DetailedTable from '../components/DetailedTable'
 import getWeb3 from '../utils/getWeb3'
 
+var START_BLOCK = 0 //960000
+
 class Claims extends Component {
 	constructor(props) {
 		super(props)
@@ -102,7 +104,8 @@ class Claims extends Component {
 				console.log("ID: " + id);
 				setTimeout(() => {
 					const response = {
-						file: 'https://alpha.projectonyx.io/api/files/' + id
+						// file: 'https://alpha.projectonyx.io/api/files/' + id
+						file: 'http://localhost:3001/api/files/' + id
 					}
 					window.location.href = response.file;
 				}, 5);
@@ -168,7 +171,7 @@ class Claims extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Claimed({_eng: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+	 			let event = instance.Claimed({_eng: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				console.log(logs)
 	  				logs.reverse()
@@ -184,7 +187,7 @@ class Claims extends Component {
 	  					]
 	  				})
 
-				    let valEvent = instance.Validated({_eng: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+				    let valEvent = instance.Validated({_eng: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 				    valEvent.get((error, logs) => {
 				    	console.log(logs)
 	  					var valTable = logs.map(log => {

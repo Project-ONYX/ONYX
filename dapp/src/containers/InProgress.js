@@ -6,6 +6,8 @@ import ReqEngContract from '../../build/contracts/ReqEngContract.json'
 import DetailedTable from '../components/DetailedTable'
 import getWeb3 from '../utils/getWeb3'
 
+var START_BLOCK = 0 //960000
+
 class InProgress extends Component {
 	constructor(props) {
 		super(props)
@@ -73,7 +75,7 @@ class InProgress extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 			this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.Claimed({_req: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+	 			let event = instance.Claimed({_req: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map(log => {
@@ -85,7 +87,7 @@ class InProgress extends Component {
 	  						log.args._eng
 	  					]
 	  				})
-	  				let validateEvent = instance.Validated({_req: accounts[0]}, {fromBlock: 960000, toBlock: 'latest'})
+	  				let validateEvent = instance.Validated({_req: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  				validateEvent.get((error, logs) => {
 	  					var validatedTable = logs.map(log => {
 	  						return [

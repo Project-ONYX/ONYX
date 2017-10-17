@@ -8,6 +8,8 @@ import getWeb3 from '../utils/getWeb3'
 import Header from '../components/Header'
 import DetailedTable from '../components/DetailedTable'
 
+var START_BLOCK = 0 //960000
+
 class Marketplace extends Component {
 	constructor(props) {
 		super(props)
@@ -139,7 +141,7 @@ class Marketplace extends Component {
   	getEvents(filterTerm) {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 	  		this.state.Factory.deployed().then((instance) => {
-	 			let event = instance.NewContract({}, {fromBlock: 960000, toBlock: 'latest'})
+	 			let event = instance.NewContract({}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
 	  				var table = logs.map((log, index) => {
@@ -152,7 +154,7 @@ class Marketplace extends Component {
 	  						<button className="button pure-button" onClick={(e) => this.handleClaim(log.args._contract, e)}>Claim</button>
 	  					]
 	  				})
-	  				let claimEvent = instance.Claimed({}, {fromBlock: 960000, toBlock: 'latest'})
+	  				let claimEvent = instance.Claimed({}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 		  			claimEvent.get((error, logs) => {
 		  				var claimTable = logs.map(log => {
 		  					return [

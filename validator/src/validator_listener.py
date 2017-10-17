@@ -1,4 +1,5 @@
 import sys
+import signal
 import os
 import argparse
 import atexit
@@ -104,7 +105,8 @@ class ValidatorListener:
 
 	# Helper function to download files into the correct directory
 	def download_files(self, file_id):
-		url = "https://alpha.projectonyx.io/api/files/" + str(file_id)
+		# url = "https://alpha.projectonyx.io/api/files/" + str(file_id)
+		url = "http://localhost:3001/api/files/" + str(file_id)
 		r = requests.get(url, allow_redirects=True)
 		fileName = self.download_path + str(file_id) + ".zip"
 		open(fileName, 'wb').write(r.content)
@@ -136,21 +138,28 @@ if __name__=="__main__":
 
 	# Cleanup code for when a hard exit is committed
 	# Cleans up the validator so that it deletes itself on the blockchain
-	def cleanup():
+	def cleanup(signum, frame):
 		if(validator.active):
 			validator.delete_validator()
-	atexit.register(cleanup)
+		sys.exit(0)
+	signal.signal(signal.SIGINT, cleanup)
+	signal.signal(signal.SIGTERM, cleanup)
+
+	validator.new_validator()
+	while(True):
+		pass
 
 	# Looping shell that listens for start, stop, and quit
-	keep_going = True
-	while(keep_going):
-		user_input = input(">")
-		if(user_input == "start"):
-			validator.new_validator()
-		if(user_input == "stop"):
-			validator.delete_validator()
-		if(user_input == "balance"):
-			print(validator.get_balance())
-		if(user_input == "quit"):
-			validator.delete_validator()
-			keep_going = False
+	# keep_going = True
+	# keep_going = False
+	# while(keep_going):
+	# 	user_input = input(">")
+	# 	if(user_input == "start"):
+	# 		validator.new_validator()
+	# 	if(user_input == "stop"):
+	# 		validator.delete_validator()
+	# 	if(user_input == "balance"):
+	# 		print(validator.get_balance())
+	# 	if(user_input == "quit"):
+	# 		validator.delete_validator()
+	# 		keep_going = False

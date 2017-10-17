@@ -8,6 +8,8 @@ import DetailedTable from '../components/DetailedTable'
 import OnyxTokenContract from '../../build/contracts/OnyxToken.json'
 import TradeNetworkContract from '../../build/contracts/TradeNetwork.json'
 
+var START_BLOCK = 0 //960000
+
 class Transfer extends Component {
 	constructor(props) {
 		super(props)
@@ -181,9 +183,10 @@ class Transfer extends Component {
   	getEvents() {
   		this.state.web3.eth.getAccounts((error, accounts) => {
 	  		this.state.TradeNetwork.deployed().then((instance) => {
-	 			let event = instance.NewTrade({}, {fromBlock: 960000, toBlock: 'latest'})
+	 			let event = instance.NewTrade({}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  			event.get((error, logs) => {
 	  				logs.reverse()
+	  				console.log(logs)
 	  				var table = logs.map((log, index) => {
 	  					return [
 	  						log.args._id.toNumber(),
@@ -194,7 +197,7 @@ class Transfer extends Component {
 	  						<button className="button pure-button" onClick={(e) => this.handleTrade(log.args._id, log.args._amountETH, accounts[0], e)}>Trade</button>
 	  					]
 	  				})
-	  				let closeEvent = instance.CloseTrade({}, {fromBlock: 960000, toBlock: 'latest'})
+	  				let closeEvent = instance.CloseTrade({}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 		  			closeEvent.get((error, logs) => {
 		  				var closeTable = logs.map(log => {
 		  					return [
