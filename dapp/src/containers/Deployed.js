@@ -77,6 +77,7 @@ class Deployed extends Component {
 			this.state.Factory.deployed().then((instance) => {
 	 			let event = instance.NewContract({_req: accounts[0]}, {fromBlock: START_BLOCK, toBlock: 'latest'})
 	  			event.get((error, logs) => {
+	  				console.log(logs)
 	  				logs.reverse()
 	  				var table = logs.map(log => {
 	  					return [

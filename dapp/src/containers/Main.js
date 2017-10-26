@@ -7,8 +7,8 @@ import Home from './Home'
 import Transfer from './Transfer'
 import Marketplace from './Marketplace'
 import Disclaimer from './Disclaimer'
-// import Mint from './Mint'
-// import Validator from './Validator'
+import Mint from './Mint'
+import Validator from './Validator'
 
 class Main extends Component {
 	render() {
@@ -20,6 +20,8 @@ class Main extends Component {
 				<Route path='/Marketplace' render={() => <Marketplace />} />
 				<Route path='/Disclaimer' render={() => <Disclaimer />} />
 				<Route exact path='/Transfer' render={() =>  <Transfer web3={this.props.web3} Onyx={this.props.Onyx} />} />
+				<Route exact path='/Mint' render={() =>      <Mint     web3={this.props.web3} Onyx={this.props.Onyx} />} />
+				<Route path='/Validator' render={() => <Validator />} />
 			</div>
 		)
 	}
